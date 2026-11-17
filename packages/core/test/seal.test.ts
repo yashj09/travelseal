@@ -13,9 +13,9 @@ const offlineRecipient = (id: Identity): SealRecipient =>
   verifyRecipientCard({ card: makeCard(id), chainId: CHAIN_ID, address: id.account.cosmos, pqPublicKey: id.account.pqc.publicKey, mlkemPublicKey: id.seal.mlkemPublicKey });
 
 beforeAll(async () => {
-  [sender, receiver, auditorQ3, auditorQ4] = await Promise.all(
+  [sender, receiver, auditorQ3, auditorQ4] = (await Promise.all(
     (["vasp-mumbai", "vasp-singapore", "auditor-q3", "auditor-q4"] as const).map((r) => identityFromMnemonic(r, newMnemonic())),
-  );
+  )) as [Identity, Identity, Identity, Identity];
   record = demoRecord({ transferId: newTransferId(), originatorAddress: sender.account.cosmos, beneficiaryAddress: receiver.account.cosmos });
   envelope = sealRecord(record, [offlineRecipient(receiver), offlineRecipient(auditorQ4)]);
 });
