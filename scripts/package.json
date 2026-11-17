@@ -1,0 +1,19 @@
+{
+  "name": "@travelseal/scripts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@noble/hashes": "2.4.0",
+    "@qorechain/qoreseal": "0.1.0",
+    "@travelseal/core": "workspace:*"
+  }
+}
