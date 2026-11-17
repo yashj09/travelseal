@@ -1,0 +1,11 @@
+{
+  "name": "travelseal",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.16.1",
+  "scripts": {
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "ts": "pnpm --filter @travelseal/scripts exec tsx"
+  }
+}

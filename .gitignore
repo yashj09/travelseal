@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.secrets/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+contracts/out/
+contracts/cache/
+contracts/broadcast/*/31337/
+.vercel/
