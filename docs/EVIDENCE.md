@@ -21,3 +21,14 @@ Appended by the scripts as each step runs. Times are UTC.
 | 2026-11-17T20:20:39 | K1 check | auditor-q3 cannot |  |
 | 2026-11-17T20:20:39 | K1 check | 4 fUSD instead of 5 fails |  |
 | 2026-11-17T20:20:39 | K1 check | another beneficiary fails |  |
+| 2026-11-17T20:20:55 | deploy: open EVM window | hybrid-signed, 1 tx, 120 blocks, value cap = this deploy's max fee | [`A4041E80C3…`](https://explore.qore.network/tx/A4041E80C307D4FAA44FC1D72159F1BC5F5CA6C1B1439FC8A33D909CE04AD7E5) |
+| 2026-11-17T20:20:57 | deploy TravelRuleLedger | at 0xa9466483c8c1a55eb18cd669b9b60308baae28ca, gas 863196 | [`0xa4b7aebf…`](https://explore.qore.network/tx/0xa4b7aebf784f28ac9b6970d47b456cedaa998897a76bbb9a9a726692c39a1602) |
+| 2026-11-17T20:21:00 | deploy: close EVM window | hybrid-signed | [`ABABBF2022…`](https://explore.qore.network/tx/ABABBF2022C89C5FFE2836DC095A26B8423B85812A8663EF032B575E84081783) |
+| 2026-11-17T20:21:12 | K2: open scoped EVM window | targets [ledger], 1 tx | [`C639235706…`](https://explore.qore.network/tx/C639235706FB9831003144CA3737352777CA9B77941067B1D0645AD0826B7DE7) |
+| 2026-11-17T20:21:18 | K2: postRecord | ML-DSA-87 signature checked on chain by pqcVerify; envelope 4330 B; gas 405441 | [`0x5104c90a…`](https://explore.qore.network/tx/0x5104c90afd6e37af4f346a66345f958e43f8616abc5d5ee86988a3e0cec6c76c) |
+| 2026-11-17T20:21:21 | K2: close EVM window | hybrid-signed | [`5FF1D333BC…`](https://explore.qore.network/tx/5FF1D333BC338CF10C4FA0ACA056323ABD2B678480E3527AF152E23863539245) |
+| 2026-11-17T20:21:37 | live positive check | valid ML-DSA-87 signature simulates successfully |  |
+| 2026-11-17T20:21:37 | live negative check | forged signature (all zero bytes): reverted BadSignature |  |
+| 2026-11-17T20:21:38 | live negative check | valid signature, envelope changed by one byte: reverted BadSignature |  |
+| 2026-11-17T20:21:38 | live negative check | valid signature claimed for another originator: reverted BadSignature |  |
+| 2026-11-17T20:21:38 | live negative check | originator with no registered PQC key: reverted KeyNotUsable |  |

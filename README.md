@@ -10,7 +10,7 @@ Built for **Build Before Q-Day: The QoreChain Developer Fest** (Encrypted Apps).
 
 - [x] Accounts, ML-DSA-87 registration with proof of possession, ML-KEM-1024 registration, recipient cards (`packages/core`, `scripts/register.ts`)
 - [x] Records sealed to the receiver and an auditor quarter, bound to the transfer terms (`packages/core/src/seal.ts`, `binding.ts`)
-- [ ] On-chain ledger with ML-DSA-87 approvals (`contracts/`)
+- [x] On-chain ledger with ML-DSA-87 approvals checked by `pqcVerify` / `pqcKeyStatus` (`contracts/src/TravelRuleLedger.sol`), live at [`0xa9466483c8c1a55eb18cd669b9b60308baae28ca`](https://explore.qore.network/address/0xa9466483c8c1a55eb18cd669b9b60308baae28ca)
 - [ ] Transfer, receive and accept or reject
 - [ ] Auditor quarters and key destruction
 - [ ] App
@@ -26,6 +26,10 @@ pnpm ts setup.ts          # creates 4 testnet accounts in .secrets/ (git-ignored
 # claim the faucet once for vasp-mumbai: https://dashboard.qorechain.io/faucet
 pnpm ts register.ts       # registers keys, funds the other accounts, writes recipient cards
 pnpm ts k1.ts             # seals a record from on-chain keys and checks who can open it
+pnpm ts deploy-ledger.ts  # opens a one-tx EVM window, deploys the ledger, closes the window
+pnpm ts k2.ts             # posts a sealed record, authorised by an ML-DSA-87 signature checked on chain
+pnpm ts negative-checks.ts # forged and tampered posts revert on the live ledger
+(cd contracts && forge test)  # 19 contract tests with the precompiles mocked at their real addresses
 ```
 
 ## Credits

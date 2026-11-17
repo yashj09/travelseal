@@ -214,6 +214,9 @@ importers:
       '@travelseal/core':
         specifier: workspace:*
         version: link:../packages/core
+      viem:
+        specifier: ^2.57.20
+        version: 2.57.20(typescript@7.0.2)
     devDependencies:
       '@types/node':
         specifier: ^26.6.6
