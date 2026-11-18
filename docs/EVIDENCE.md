@@ -32,3 +32,23 @@ Appended by the scripts as each step runs. Times are UTC.
 | 2026-11-17T20:21:38 | live negative check | valid signature, envelope changed by one byte: reverted BadSignature |  |
 | 2026-11-17T20:21:38 | live negative check | valid signature claimed for another originator: reverted BadSignature |  |
 | 2026-11-17T20:21:38 | live negative check | originator with no registered PQC key: reverted KeyNotUsable |  |
+| 2026-11-18T21:46:31 | swap on the native AMM | 10 QOR for fUSD in pool 2 (min 0.72882); vasp-mumbai now holds 0.764881 fUSD | [`F79F30C51B…`](https://explore.qore.network/tx/F79F30C51BE08D81E02D1C560A5799E5039690B7FC739B32549B91559810014C) |
+| 2026-11-18T21:47:44 | post record: open EVM window | vasp-mumbai, scoped to the ledger, 1 tx | [`399BF31880…`](https://explore.qore.network/tx/399BF318803A4B69DC5B3B0276558A1970245C3F646860BA3A54515AAB3045CA) |
+| 2026-11-18T21:47:47 | post record | postRecord, ML-DSA-87 signature checked on chain; gas 405321 | [`0x8d47affc…`](https://explore.qore.network/tx/0x8d47affc44a41f8837b9fb79c76da73a018f484b88ab1076fae1e547649fa8d9) |
+| 2026-11-18T21:47:50 | post record: close EVM window | vasp-mumbai | [`BA8E915D1C…`](https://explore.qore.network/tx/BA8E915D1C539FED5D3BC623D151040368FCB8CF31D844760776BB26389F5029) |
+| 2026-11-18T21:47:53 | transfer | 0.25 fUSD to qor1ketaxqdh… with memo travelseal:85f4d7b6… | [`53B414BF01…`](https://explore.qore.network/tx/53B414BF01CD849729C40F1FDAD15C18393388B3DE3FBA41F03DDA381220E49D) |
+| 2026-11-18T21:47:54 | receive | deposit 0.25 fUSD from qor1ywtz48pc…, transfer 85f4d7b6… |  |
+| 2026-11-18T21:48:15 | receive | deposit 0.25 fUSD from qor1ywtz48pc…, transfer 85f4d7b6… |  |
+| 2026-11-18T21:48:16 | open record | opened with the landed terms: originator Meera Kulkarni (fictional) |  |
+| 2026-11-18T21:48:21 | accept record: open EVM window | vasp-singapore, scoped to the ledger, 1 tx | [`B2AE66D122…`](https://explore.qore.network/tx/B2AE66D1224BE98C2D759ED9FE9D85A80041BA3CEAD63FEF9A2A989EF01D1ABF) |
+| 2026-11-18T21:48:24 | accept record | answer, ML-DSA-87 signature checked on chain; gas 239411 | [`0x1fe9996b…`](https://explore.qore.network/tx/0x1fe9996beeed2fba71c198f3ad67b40d97917ea354b536c5517f5968efb367ae) |
+| 2026-11-18T21:48:27 | accept record: close EVM window | vasp-singapore | [`6401CB7A37…`](https://explore.qore.network/tx/6401CB7A37CCF187E52292E0F1BDE2EEC352AB9FCB7C7B004A0D821EE23EF400) |
+| 2026-11-18T21:48:41 | post record: open EVM window | vasp-mumbai, scoped to the ledger, 1 tx | [`5B2DA42807…`](https://explore.qore.network/tx/5B2DA428073367E3F58E444A8A4B36B70E473852E365CB83E2260B6E42CBE2CA) |
+| 2026-11-18T21:48:44 | post record | postRecord, ML-DSA-87 signature checked on chain; gas 405465 | [`0x886cdb66…`](https://explore.qore.network/tx/0x886cdb66fb3cfd5ad8524b3b5c53394ec2a1cb2e6058215b3d6b826b086ac662) |
+| 2026-11-18T21:48:47 | post record: close EVM window | vasp-mumbai | [`BA85822C1B…`](https://explore.qore.network/tx/BA85822C1BA481779C93FABEDA688EF85D629A1F7FCEE8196BAD7A586829971A) |
+| 2026-11-18T21:48:49 | transfer | 0.2 fUSD to qor1ketaxqdh… with memo travelseal:e79c1c81… | [`D1AD6FA38F…`](https://explore.qore.network/tx/D1AD6FA38F009CE983F8171204B75D2E82C6F2245B0B18BD052FB2651042EFE1) |
+| 2026-11-18T21:48:50 | receive | deposit 0.2 fUSD from qor1ywtz48pc…, transfer e79c1c81… |  |
+| 2026-11-18T21:48:51 | open record | did not open with the landed terms: DECRYPTION_FAILED |  |
+| 2026-11-18T21:48:57 | reject record: open EVM window | vasp-singapore, scoped to the ledger, 1 tx | [`E4FD4C36D2…`](https://explore.qore.network/tx/E4FD4C36D2D516C767AF95DDB6A69E605EEE33B25143512661900F0577216E97) |
+| 2026-11-18T21:49:00 | reject record | answer, ML-DSA-87 signature checked on chain; gas 239279 | [`0xba1aca17…`](https://explore.qore.network/tx/0xba1aca17e635ff15fc9327b359eadb9883222494e2f3db29fdc2358e1eec17f7) |
+| 2026-11-18T21:49:03 | reject record: close EVM window | vasp-singapore | [`623F9DC3D5…`](https://explore.qore.network/tx/623F9DC3D596006FF9572633ED927E3C932D03CB2B0EFBD800233048299205D4) |

@@ -11,7 +11,7 @@ Built for **Build Before Q-Day: The QoreChain Developer Fest** (Encrypted Apps).
 - [x] Accounts, ML-DSA-87 registration with proof of possession, ML-KEM-1024 registration, recipient cards (`packages/core`, `scripts/register.ts`)
 - [x] Records sealed to the receiver and an auditor quarter, bound to the transfer terms (`packages/core/src/seal.ts`, `binding.ts`)
 - [x] On-chain ledger with ML-DSA-87 approvals checked by `pqcVerify` / `pqcKeyStatus` (`contracts/src/TravelRuleLedger.sol`), live at [`0xa9466483c8c1a55eb18cd669b9b60308baae28ca`](https://explore.qore.network/address/0xa9466483c8c1a55eb18cd669b9b60308baae28ca)
-- [ ] Transfer, receive and accept or reject
+- [x] Transfer, receive and accept or reject: the receiver rebuilds the terms from the deposit that landed (`packages/core/src/observe.ts`); a record that does not open for them is rejected on chain (`scripts/scenario.ts accept|tamper`)
 - [ ] Auditor quarters and key destruction
 - [ ] App
 
@@ -29,6 +29,9 @@ pnpm ts k1.ts             # seals a record from on-chain keys and checks who can
 pnpm ts deploy-ledger.ts  # opens a one-tx EVM window, deploys the ledger, closes the window
 pnpm ts k2.ts             # posts a sealed record, authorised by an ML-DSA-87 signature checked on chain
 pnpm ts negative-checks.ts # forged and tampered posts revert on the live ledger
+pnpm ts swap.ts 10        # buys demo fUSD with QOR on the native AMM (pool 2)
+pnpm ts scenario.ts accept # post record, send 0.25 fUSD, receiver opens it and accepts on chain
+pnpm ts scenario.ts tamper # record says 0.25, 0.20 lands: it does not open and is rejected on chain
 (cd contracts && forge test)  # 19 contract tests with the precompiles mocked at their real addresses
 ```
 
