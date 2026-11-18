@@ -12,7 +12,8 @@ Built for **Build Before Q-Day: The QoreChain Developer Fest** (Encrypted Apps).
 - [x] Records sealed to the receiver and an auditor quarter, bound to the transfer terms (`packages/core/src/seal.ts`, `binding.ts`)
 - [x] On-chain ledger with ML-DSA-87 approvals checked by `pqcVerify` / `pqcKeyStatus` (`contracts/src/TravelRuleLedger.sol`), live at [`0xa9466483c8c1a55eb18cd669b9b60308baae28ca`](https://explore.qore.network/address/0xa9466483c8c1a55eb18cd669b9b60308baae28ca)
 - [x] Transfer, receive and accept or reject: the receiver rebuilds the terms from the deposit that landed (`packages/core/src/observe.ts`); a record that does not open for them is rejected on chain (`scripts/scenario.ts accept|tamper`)
-- [ ] Auditor quarters and key destruction
+- [x] Auditor quarters: each quarter's auditor opens only its quarter's records, each checked against the transfer that landed, and flags records that don't match (`scripts/audit.ts`); end-of-retention key destruction (`scripts/shred.ts`)
+- [x] Simulated Q-Day: a TRISA-style RSA-OAEP envelope opens for whoever gets the RSA key; the TravelSeal envelope stays closed without the ML-KEM secret (`packages/core/src/trisaClassic.ts`, `test/qday.test.ts`)
 - [ ] App
 
 On-chain evidence for every step: [docs/EVIDENCE.md](docs/EVIDENCE.md).
@@ -32,6 +33,9 @@ pnpm ts negative-checks.ts # forged and tampered posts revert on the live ledger
 pnpm ts swap.ts 10        # buys demo fUSD with QOR on the native AMM (pool 2)
 pnpm ts scenario.ts accept # post record, send 0.25 fUSD, receiver opens it and accepts on chain
 pnpm ts scenario.ts tamper # record says 0.25, 0.20 lands: it does not open and is rejected on chain
+pnpm ts scenario.ts accept q3 # same, filed under Q3 for auditor-q3
+pnpm ts audit.ts q4       # the Q4 auditor opens Q4 records against their landed transfers
+pnpm ts shred.ts q3 --yes # end of retention: remove auditor-q3's ML-KEM key on chain, destroy its mnemonic
 (cd contracts && forge test)  # 19 contract tests with the precompiles mocked at their real addresses
 ```
 

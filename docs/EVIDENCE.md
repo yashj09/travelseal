@@ -52,3 +52,14 @@ Appended by the scripts as each step runs. Times are UTC.
 | 2026-11-18T21:48:57 | reject record: open EVM window | vasp-singapore, scoped to the ledger, 1 tx | [`E4FD4C36D2…`](https://explore.qore.network/tx/E4FD4C36D2D516C767AF95DDB6A69E605EEE33B25143512661900F0577216E97) |
 | 2026-11-18T21:49:00 | reject record | answer, ML-DSA-87 signature checked on chain; gas 239279 | [`0xba1aca17…`](https://explore.qore.network/tx/0xba1aca17e635ff15fc9327b359eadb9883222494e2f3db29fdc2358e1eec17f7) |
 | 2026-11-18T21:49:03 | reject record: close EVM window | vasp-singapore | [`623F9DC3D5…`](https://explore.qore.network/tx/623F9DC3D596006FF9572633ED927E3C932D03CB2B0EFBD800233048299205D4) |
+| 2026-11-18T21:51:35 | post record: open EVM window | vasp-mumbai, scoped to the ledger, 1 tx | [`031CFDC3BF…`](https://explore.qore.network/tx/031CFDC3BFA888EDB75896BA136A15B80F4D643956A4DC53F5C25922D4F2D6C3) |
+| 2026-11-18T21:51:38 | post record | postRecord, ML-DSA-87 signature checked on chain; gas 405429 | [`0xd5201e95…`](https://explore.qore.network/tx/0xd5201e95529c3f862552d29198953bcab91192faaa80aa83319f6035c8a570f5) |
+| 2026-11-18T21:51:41 | post record: close EVM window | vasp-mumbai | [`1B4B94A03F…`](https://explore.qore.network/tx/1B4B94A03F221C6B0EBB02DD2F914E6E3F929B4F5AA181672852503FBAC4BE1A) |
+| 2026-11-18T21:51:44 | transfer | 0.25 fUSD to qor1ketaxqdh… with memo travelseal:cb5d93c6… | [`997594DA4B…`](https://explore.qore.network/tx/997594DA4B305F33473AAFF7B5CF2C8950B988F9186E3F0D8F586C7C3D200CF4) |
+| 2026-11-18T21:51:44 | receive | deposit 0.25 fUSD from qor1ywtz48pc…, transfer cb5d93c6… |  |
+| 2026-11-18T21:51:46 | open record | opened with the landed terms: originator Meera Kulkarni (fictional) |  |
+| 2026-11-18T21:51:50 | accept record: open EVM window | vasp-singapore, scoped to the ledger, 1 tx | [`BA041C9AF1…`](https://explore.qore.network/tx/BA041C9AF1C0574E71BE4A627902ADC06630E113132DE5E2CEA5005D13FD9166) |
+| 2026-11-18T21:51:53 | accept record | answer, ML-DSA-87 signature checked on chain; gas 239447 | [`0x7362e4c1…`](https://explore.qore.network/tx/0x7362e4c179d661f5a76c6ce65c886d9e601104bac80489154c0bbd262d439bc1) |
+| 2026-11-18T21:51:56 | accept record: close EVM window | vasp-singapore | [`C20482374E…`](https://explore.qore.network/tx/C20482374E04AF12A0B4800DFBB4316D8ECC46E449C02F53842D20A0482A4A2E) |
+| 2026-11-18T21:52:03 | audit q4 | auditor-q4 opened 1 of 3 Q4 records against their landed transfers; 1 had no matching transfer |  |
+| 2026-11-18T21:52:09 | audit q3 | auditor-q3 opened 1 of 1 Q3 records against their landed transfers; 0 had no matching transfer |  |

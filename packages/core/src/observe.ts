@@ -1,4 +1,5 @@
-import { transferIdFromMemo, type TransferTerms } from "./binding.js";
+import { transferIdFromMemo, type TransferId, type TransferTerms } from "./binding.js";
+import type { Chain } from "./chain.js";
 
 /** Why a landed transaction can't be matched to a travel-rule record at all. */
 export type ObserveError =
@@ -36,4 +37,13 @@ export function observeTransfer(tx: TxJson, receiver: string): Observed {
     height: Number(tx.tx_response.height),
     terms: { transferId, originator: send.from_address, beneficiary: send.to_address, amount: coins[0]!.amount, denom: coins[0]!.denom },
   };
+}
+
+/** Find the deposit that carries `transferId` to `receiver` (used by auditors, who never saw the deposit arrive). */
+export async function findTransfer(chain: Chain, receiver: string, transferId: TransferId): Promise<Observed | undefined> {
+  for (const tx of await chain.searchTxs(`transfer.recipient='${receiver}'`)) {
+    const o = observeTransfer(tx as TxJson, receiver);
+    if (o.ok && o.terms.transferId === transferId) return o;
+  }
+  return undefined;
 }

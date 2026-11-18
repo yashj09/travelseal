@@ -32,7 +32,7 @@ export const termsOf = (r: TravelRecord): TransferTerms => ({
   denom: r.transfer.denom,
 });
 
-export const encodeRecord = (r: TravelRecord) => new TextEncoder().encode(JSON.stringify(r));
+export const encodeRecord = (r: TravelRecord): Uint8Array<ArrayBuffer> => new TextEncoder().encode(JSON.stringify(r));
 
 export function decodeRecord(bytes: Uint8Array): TravelRecord {
   const r = JSON.parse(new TextDecoder().decode(bytes)) as TravelRecord;

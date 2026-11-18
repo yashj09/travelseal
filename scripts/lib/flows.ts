@@ -42,12 +42,12 @@ async function ledgerTx(id: Identity, label: string, functionName: "postRecord" 
 }
 
 /** Originator: seal the travel record to the beneficiary and this quarter's auditor, sign it with ML-DSA-87, post it. */
-export async function postRecord(sender: Identity, receiver: Identity, auditor: Identity, amount: string): Promise<TransferFile> {
+export async function postRecord(sender: Identity, receiver: Identity, auditor: Identity, amount: string, period = periodOf(new Date())): Promise<TransferFile> {
   const { ledger } = loadDeployment();
   const recipients = await Promise.all([receiver, auditor].map((id) => resolveRecipient(chain, id.account.cosmos, card(id.role))));
   const record = demoRecord({ transferId: newTransferId(), originatorAddress: sender.account.cosmos, beneficiaryAddress: receiver.account.cosmos, amount });
   const envelope = sealRecord(record, recipients);
-  const args = { transferId: asBytes32(record.transferId), originator: sender.account.evm as Address, beneficiary: receiver.account.evm as Address, period: periodOf(new Date()), envelopeHash: keccak256(envelope) };
+  const args = { transferId: asBytes32(record.transferId), originator: sender.account.evm as Address, beneficiary: receiver.account.evm as Address, period, envelopeHash: keccak256(envelope) };
   const onChain = await pub.readContract({ address: ledger, abi: ledgerAbi, functionName: "postPayload", args: [args.transferId, args.originator, args.beneficiary, args.period, args.envelopeHash] });
   if (onChain !== postPayload(ledger, args)) throw new Error("TS and contract disagree on the post payload; refusing to sign");
   const postTx = await ledgerTx(sender, "post record", "postRecord", [args.transferId, args.originator, args.beneficiary, args.period, toHex(envelope), pqSignPayload(sender.account, onChain)]);
@@ -63,23 +63,29 @@ export async function sendTransfer(sender: Identity, to: string, transferId: Tra
   return tx.hash;
 }
 
+export interface PostedEvent { transferId: TransferId; originator: Address; beneficiary: Address; period: number; envelope: Uint8Array; block: bigint }
+
 /**
- * Beneficiary: find the sealed envelope in the ledger's RecordPosted event and check it against the stored hash.
- * The public RPC caps eth_getLogs at 10,000 blocks, so scan backwards from the head in chunks, down to the deploy block.
+ * All RecordPosted events (optionally for one transfer), newest first. The public RPC caps eth_getLogs at 10,000
+ * blocks, so scan backwards from the head in chunks, down to the deploy block. Each envelope is checked against its hash.
  */
-export async function fetchEnvelope(transferId: TransferId): Promise<Uint8Array | undefined> {
+export async function scanPosted(transferId?: TransferId, stopAtFirst = false): Promise<PostedEvent[]> {
   const { ledger, block } = loadDeployment();
-  const CHUNK = 9_999n;
+  const CHUNK = 9_999n, out: PostedEvent[] = [];
   for (let to = await pub.getBlockNumber(); to >= BigInt(block); to -= CHUNK + 1n) {
     const from = to - CHUNK > BigInt(block) ? to - CHUNK : BigInt(block);
-    const logs = await pub.getContractEvents({ address: ledger, abi: ledgerAbi, eventName: "RecordPosted", args: { transferId: asBytes32(transferId) }, fromBlock: from, toBlock: to });
-    const log = logs[0] as { args: { envelope: Hex; envelopeHash: Hex } } | undefined;
-    if (!log) continue;
-    if (keccak256(log.args.envelope) !== log.args.envelopeHash) throw new Error("event envelope does not match its hash");
-    return hexToBytes(log.args.envelope);
+    const logs = await pub.getContractEvents({ address: ledger, abi: ledgerAbi, eventName: "RecordPosted", ...(transferId ? { args: { transferId: asBytes32(transferId) } } : {}), fromBlock: from, toBlock: to });
+    for (const log of [...logs].reverse() as any[]) {
+      const a = log.args as { transferId: Hex; originator: Address; beneficiary: Address; period: number; envelopeHash: Hex; envelope: Hex };
+      if (keccak256(a.envelope) !== a.envelopeHash) throw new Error(`event envelope for ${a.transferId} does not match its hash`);
+      out.push({ transferId: a.transferId.slice(2) as TransferId, originator: a.originator, beneficiary: a.beneficiary, period: Number(a.period), envelope: hexToBytes(a.envelope), block: log.blockNumber });
+      if (stopAtFirst) return out;
+    }
   }
-  return undefined;
+  return out;
 }
+
+export const fetchEnvelope = async (transferId: TransferId) => (await scanPosted(transferId, true))[0]?.envelope;
 
 export type Outcome = { decision: "accepted" } | { decision: "rejected"; reason: keyof typeof RejectReason };
 

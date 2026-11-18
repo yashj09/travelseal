@@ -10,3 +10,5 @@ export * from "./fixtures/demo.js";
 export { msg } from "@qorechain/sdk";
 export * from "./ledger.js";
 export * from "./observe.js";
+export * from "./trisaClassic.js";
+export { evmToQor } from "@qorechain/sdk";

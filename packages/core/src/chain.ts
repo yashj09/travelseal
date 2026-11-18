@@ -73,6 +73,13 @@ export class Chain {
     return { found: true, publicKey: b64(r.key.public_key), registeredHeight: Number(r.key.registered_height ?? 0) };
   }
 
+  /** Txs matching one indexed event condition (this node returns nothing for AND-combined queries), newest first. */
+  async searchTxs(query: string, limit = 100): Promise<Record<string, any>[]> {
+    const q = new URLSearchParams({ query, "pagination.limit": String(limit), order_by: "ORDER_BY_DESC" });
+    const r = await this.get<{ txs: Record<string, any>[]; tx_responses: Record<string, any>[] }>(`/cosmos/tx/v1beta1/txs?${q}`);
+    return (r?.tx_responses ?? []).map((tx_response, i) => ({ tx: r!.txs[i], tx_response }));
+  }
+
   async getTx(hash: string): Promise<Record<string, any> | undefined> {
     return this.get(`/cosmos/tx/v1beta1/txs/${hash}`);
   }
