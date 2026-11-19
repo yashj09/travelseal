@@ -1,12 +1,13 @@
 import { FileLockIcon, InboxIcon, ScaleIcon, SendIcon } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { BrandMark } from "@/components/travelseal/brand"
 import { Inspector } from "@/components/travelseal/inspector"
 import { NetworkBadge } from "@/components/travelseal/network-badge"
+import { AuditorPanel } from "@/components/travelseal/auditor-panel"
 import { InboxPanel } from "@/components/travelseal/inbox-panel"
+import { QdayPanel } from "@/components/travelseal/qday-panel"
 import { SendPanel } from "@/components/travelseal/send-panel"
 import { useSession } from "@/lib/session"
 
@@ -16,17 +17,6 @@ const TABS = [
   { id: "audit", label: "Auditor", icon: ScaleIcon, who: "Quarter auditor" },
   { id: "qday", label: "Q-Day", icon: FileLockIcon, who: "Simulation" },
 ] as const
-
-function Placeholder({ title }: { title: string }) {
-  return (
-    <Empty className="border border-dashed">
-      <EmptyHeader>
-        <EmptyTitle>{title}</EmptyTitle>
-        <EmptyDescription>Coming in the next commit.</EmptyDescription>
-      </EmptyHeader>
-    </Empty>
-  )
-}
 
 export function App() {
   const { mode } = useSession()
@@ -67,7 +57,7 @@ export function App() {
           </TabsList>
           {TABS.map((t) => (
             <TabsContent key={t.id} value={t.id} className="pt-4">
-              {t.id === "send" ? <SendPanel /> : t.id === "inbox" ? <InboxPanel /> : <Placeholder title={`${t.label} · ${t.who}`} />}
+              {t.id === "send" ? <SendPanel /> : t.id === "inbox" ? <InboxPanel /> : t.id === "audit" ? <AuditorPanel /> : <QdayPanel />}
             </TabsContent>
           ))}
         </Tabs>

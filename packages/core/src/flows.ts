@@ -185,7 +185,7 @@ export function createFlows(ctx: FlowContext) {
     return out;
   }
 
-  return { postRecord, sendTransfer, scanPosted, readAnswer, receiveAndAnswer, auditQuarter, envelopeText: envelopeToText };
+  return { postRecord, sendTransfer, scanPosted, readAnswer, receiveAndAnswer, auditQuarter, envelopeText: envelopeToText, log: ctx.log };
 }
 
 export type Flows = ReturnType<typeof createFlows>;

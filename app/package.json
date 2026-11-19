@@ -16,6 +16,7 @@
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource-variable/geist-mono": "^5.3.0",
     "@fontsource/instrument-serif": "^5.3.0",
+    "@qorechain/qoreseal": "0.1.0",
     "@tailwindcss/vite": "^4",
     "@travelseal/core": "workspace:*",
     "class-variance-authority": "^0.7.1",
