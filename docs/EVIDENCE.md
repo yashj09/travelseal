@@ -64,3 +64,4 @@ Appended by the scripts as each step runs. Times are UTC.
 | 2026-11-18T21:52:03 | audit q4 | auditor-q4 opened 1 of 3 Q4 records against their landed transfers; 1 had no matching transfer |  |
 | 2026-11-18T21:52:09 | audit q3 | auditor-q3 opened 1 of 1 Q3 records against their landed transfers; 0 had no matching transfer |  |
 | 2026-11-18T21:52:46 | top up vasp-singapore | 10 QOR from vasp-mumbai | [`3853C06EC5…`](https://explore.qore.network/tx/3853C06EC56F189B36E0C3184A62D9B902C21DAF68EC02884C083B7B0663BE3C) |
+| 2026-11-19T20:35:36 | audit 20264 | auditor-q4 opened 1 of 3 records against their landed transfers, flagged 1, 1 had no transfer |  |

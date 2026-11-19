@@ -1,7 +1,7 @@
-import { loadAll } from "./lib/secrets.js";
-import { postRecord, receiveAndAnswer, sendTransfer } from "./lib/flows.js";
+import type { Hex } from "viem";
 import { saveTransfer } from "./lib/deployment.js";
-import type { TransferId } from "@travelseal/core";
+import { flows } from "./lib/flows.js";
+import { loadAll } from "./lib/secrets.js";
 
 /**
  * pnpm ts scenario.ts accept   record says 0.25 fUSD, 0.25 fUSD lands  -> accepted on chain
@@ -16,11 +16,9 @@ const recordAmount = "250000";
 const sentAmount = mode === "tamper" ? "200000" : recordAmount;
 
 console.log(`\n== scenario: ${mode}, filed under ${quarter} ==`);
-const t = await postRecord(sender, receiver, auditor, recordAmount, quarter === "q3" ? 20263 : 20264);
-t.transferTx = await sendTransfer(sender, receiver.account.cosmos, t.transferId.slice(2) as TransferId, sentAmount);
-const { outcome, answerTx } = await receiveAndAnswer(receiver, t.transferTx);
-t.answerTx = answerTx;
-saveTransfer(t);
-console.log(`\nresult: ${JSON.stringify(outcome)}  transfer ${t.transferId}`);
-const expected = mode === "accept" ? "accepted" : "rejected";
-if (outcome.decision !== expected) { console.error(`expected ${expected}`); process.exit(1); }
+const p = await flows.postRecord({ sender, receiver, auditor, amount: recordAmount, period: quarter === "q3" ? 20263 : 20264 });
+const transferTx = await flows.sendTransfer(sender, receiver.account.cosmos, p.transferId, sentAmount);
+const { outcome, answerTx } = await flows.receiveAndAnswer(receiver, transferTx);
+saveTransfer({ transferId: `0x${p.transferId}` as Hex, envelope: flows.envelopeText(p.envelope), period: p.period, originator: sender.account.cosmos, beneficiary: receiver.account.cosmos, amount: recordAmount, denom: p.record.transfer.denom, postTx: p.postTx, transferTx, ...(answerTx ? { answerTx } : {}) });
+console.log(`\nresult: ${outcome.decision}${"reason" in outcome ? ` (${outcome.reason})` : ""}  transfer 0x${p.transferId}`);
+if (outcome.decision !== (mode === "accept" ? "accepted" : "rejected")) process.exit(1);
