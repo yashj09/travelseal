@@ -4,7 +4,9 @@ Travel-rule data between exchanges, sealed so a copy taken today stays unreadabl
 
 When an exchange sends crypto to another exchange, it must send the customer's identity data with it (the FATF travel rule) and keep it for years. TravelSeal seals each record in the browser with ML-KEM-1024 (QoreSeal hybrid mode) to the receiving exchange's key registered on QoreChain, and binds it to the transfer it describes: if the transfer that lands on chain differs in amount, asset, sender, beneficiary or transfer ID, the record does not open.
 
-Built for **Build Before Q-Day: The QoreChain Developer Fest** (Encrypted Apps). Work in progress; all identity data is fictional.
+Built for **Build Before Q-Day: The QoreChain Developer Fest** (Encrypted Apps). All identity data is fictional; this is a reference design, not a compliance product.
+
+![Inbox: a record opened against the deposit that landed and accepted on chain, with every step in the under-the-hood panel](docs/media/inbox-accepted.png)
 
 ## Status
 
@@ -14,7 +16,7 @@ Built for **Build Before Q-Day: The QoreChain Developer Fest** (Encrypted Apps).
 - [x] Transfer, receive and accept or reject: the receiver rebuilds the terms from the deposit that landed (`packages/core/src/observe.ts`); a record that does not open for them is rejected on chain (`scripts/scenario.ts accept|tamper`)
 - [x] Auditor quarters: each quarter's auditor opens only its quarter's records, each checked against the transfer that landed, and flags records that don't match (`scripts/audit.ts`); end-of-retention key destruction (`scripts/shred.ts`)
 - [x] Simulated Q-Day: a TRISA-style RSA-OAEP envelope opens for whoever gets the RSA key; the TravelSeal envelope stays closed without the ML-KEM secret (`packages/core/src/trisaClassic.ts`, `test/qday.test.ts`)
-- [ ] App
+- [x] App (`app/`): Send, Inbox, Auditor and Q-Day screens; sealing, signing and opening run in the browser; every step links to its transaction. Replay mode for the public deploy holds no keys.
 
 On-chain evidence for every step: [docs/EVIDENCE.md](docs/EVIDENCE.md).
 
@@ -38,6 +40,20 @@ pnpm ts audit.ts q4       # the Q4 auditor opens Q4 records against their landed
 pnpm ts shred.ts q3 --yes # end of retention: remove auditor-q3's ML-KEM key on chain, destroy its mnemonic
 (cd contracts && forge test)  # 19 contract tests with the precompiles mocked at their real addresses
 ```
+
+## App
+
+```sh
+pnpm app                  # vite dev on 127.0.0.1; serves the demo keys from .secrets/ to localhost only
+pnpm --filter @travelseal/app e2e:flow     # drives Send then Inbox through the UI, on chain
+pnpm --filter @travelseal/app e2e:screens  # Auditor and Q-Day, in live mode or against a production build (replay)
+```
+
+The production build (`pnpm app:build`) has no keys: it reads records, transfers and answers from qorechain-diana and runs the Q-Day simulation with fresh in-browser keys. REST goes through a same-origin `/lcd` rewrite (`app/vercel.json`) because the public REST endpoint sends no CORS headers.
+
+| Auditor | Q-Day |
+|---|---|
+| ![Q4 auditor: two records opened, one flagged as not matching its transfer, one with no transfer](docs/media/auditor.png) | ![Simulated Q-Day: the RSA-OAEP copy opens for Eve, the TravelSeal copies stay sealed](docs/media/qday.png) |
 
 ## Credits
 

@@ -9,7 +9,10 @@
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "e2e:smoke": "node e2e/smoke.mjs",
+    "e2e:flow": "node e2e/flow.mjs",
+    "e2e:screens": "node e2e/screens.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

@@ -6,6 +6,8 @@
   "scripts": {
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
-    "ts": "pnpm --filter @travelseal/scripts exec tsx"
+    "ts": "pnpm --filter @travelseal/scripts exec tsx",
+    "app": "pnpm --filter @travelseal/app dev",
+    "app:build": "pnpm --filter @travelseal/app build"
   }
 }
