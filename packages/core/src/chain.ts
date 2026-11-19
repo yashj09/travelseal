@@ -9,8 +9,14 @@ export interface TxResult {
 }
 
 export class TxFailed extends Error {
-  constructor(readonly hash: string, readonly code: number, readonly rawLog: string) {
+  readonly hash: string;
+  readonly code: number;
+  readonly rawLog: string;
+  constructor(hash: string, code: number, rawLog: string) {
     super(`tx ${hash} failed with code ${code}: ${rawLog}`);
+    this.hash = hash;
+    this.code = code;
+    this.rawLog = rawLog;
   }
 }
 
@@ -33,7 +39,12 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** REST-only access to qorechain-diana. Works in Node and, behind a same-origin proxy, in the browser (public REST sends no CORS headers). */
 export class Chain {
-  constructor(readonly rest: string = DEFAULT_REST, private readonly fetchImpl: typeof fetch = globalThis.fetch.bind(globalThis)) {}
+  readonly rest: string;
+  private readonly fetchImpl: typeof fetch;
+  constructor(rest: string = DEFAULT_REST, fetchImpl: typeof fetch = globalThis.fetch.bind(globalThis)) {
+    this.rest = rest;
+    this.fetchImpl = fetchImpl;
+  }
 
   async get<T>(path: string): Promise<T | undefined> {
     const res = await this.fetchImpl(this.rest + path, { headers: { accept: "application/json", "user-agent": "travelseal/0.1" } });
