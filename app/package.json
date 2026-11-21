@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "e2e:smoke": "node e2e/smoke.mjs",
     "e2e:flow": "node e2e/flow.mjs",
-    "e2e:screens": "node e2e/screens.mjs"
+    "e2e:screens": "node e2e/screens.mjs",
+    "e2e:record": "node e2e/record.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
