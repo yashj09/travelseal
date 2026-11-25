@@ -34,7 +34,9 @@ contract TravelRuleLedger {
         bytes32 envelopeHash;
     }
 
-    mapping(bytes32 transferId => Record) public records;
+    /// Keyed by originator and transfer id together. A transfer id is public as soon as it is posted or used in a
+    /// memo, so keying by the id alone would let anyone take a record's slot or attach their own record to it.
+    mapping(bytes32 recordKey => Record) internal _records;
 
     event RecordPosted(
         bytes32 indexed transferId,
@@ -44,12 +46,19 @@ contract TravelRuleLedger {
         bytes32 envelopeHash,
         bytes envelope
     );
-    event RecordAnswered(bytes32 indexed transferId, address indexed beneficiary, Decision decision, uint8 reason);
+    event RecordAnswered(
+        bytes32 indexed transferId,
+        address indexed originator,
+        address indexed beneficiary,
+        Decision decision,
+        uint8 reason
+    );
 
     error AlreadyPosted(bytes32 transferId);
     error UnknownTransfer(bytes32 transferId);
     error AlreadyAnswered(bytes32 transferId);
     error InvalidDecision();
+    error ReasonMismatch();
     error InvalidParty();
     error KeyNotUsable(address signer);
     error BadSignature(address signer);
@@ -63,56 +72,84 @@ contract TravelRuleLedger {
         bytes calldata envelope,
         bytes calldata signature
     ) external {
-        if (records[transferId].originator != address(0)) revert AlreadyPosted(transferId);
+        bytes32 key = recordKey(originator, transferId);
+        if (_records[key].originator != address(0)) revert AlreadyPosted(transferId);
         if (originator == address(0) || beneficiary == address(0) || originator == beneficiary) revert InvalidParty();
         bytes32 envelopeHash = keccak256(envelope);
-        _requirePqSignature(originator, postPayload(transferId, originator, beneficiary, period, envelopeHash), signature);
-        records[transferId] = Record(originator, beneficiary, period, Decision.Pending, 0, envelopeHash);
+        _requirePqSignature(
+            originator, postPayload(transferId, originator, beneficiary, period, envelopeHash), signature
+        );
+        _records[key] = Record(originator, beneficiary, period, Decision.Pending, 0, envelopeHash);
         emit RecordPosted(transferId, originator, beneficiary, period, envelopeHash, envelope);
     }
 
-    /// @notice The beneficiary exchange accepts or rejects a record after opening it against the transfer that landed.
-    function answer(bytes32 transferId, Decision decision, uint8 reason, bytes calldata signature) external {
-        Record storage r = records[transferId];
+    /// @notice The beneficiary exchange accepts or rejects `originator`'s record after opening it against the transfer
+    /// that landed. An accept carries reason 0; a reject carries a non-zero reason.
+    function answer(bytes32 transferId, address originator, Decision decision, uint8 reason, bytes calldata signature)
+        external
+    {
+        Record storage r = _records[recordKey(originator, transferId)];
         if (r.originator == address(0)) revert UnknownTransfer(transferId);
         if (r.decision != Decision.Pending) revert AlreadyAnswered(transferId);
         if (decision == Decision.Pending) revert InvalidDecision();
-        _requirePqSignature(r.beneficiary, answerPayload(transferId, r.envelopeHash, decision, reason), signature);
+        if ((decision == Decision.Accepted) != (reason == 0)) revert ReasonMismatch();
+        _requirePqSignature(
+            r.beneficiary, answerPayload(transferId, originator, r.envelopeHash, decision, reason), signature
+        );
         r.decision = decision;
         r.reason = reason;
-        emit RecordAnswered(transferId, r.beneficiary, decision, reason);
+        emit RecordAnswered(transferId, originator, r.beneficiary, decision, reason);
+    }
+
+    function recordKey(address originator, bytes32 transferId) public pure returns (bytes32) {
+        return keccak256(abi.encode(originator, transferId));
+    }
+
+    function records(address originator, bytes32 transferId) external view returns (Record memory) {
+        return _records[recordKey(originator, transferId)];
     }
 
     /// @notice The exact bytes the originator signs (after the message prefix) to post a record.
-    function postPayload(bytes32 transferId, address originator, address beneficiary, uint32 period, bytes32 envelopeHash)
-        public
-        view
-        returns (bytes memory)
-    {
-        return abi.encode(POST_TAG, block.chainid, address(this), transferId, originator, beneficiary, period, envelopeHash);
+    function postPayload(
+        bytes32 transferId,
+        address originator,
+        address beneficiary,
+        uint32 period,
+        bytes32 envelopeHash
+    ) public view returns (bytes memory) {
+        return abi.encode(
+            POST_TAG, block.chainid, address(this), transferId, originator, beneficiary, period, envelopeHash
+        );
     }
 
     /// @notice The exact bytes the beneficiary signs (after the message prefix) to answer a record.
-    function answerPayload(bytes32 transferId, bytes32 envelopeHash, Decision decision, uint8 reason)
-        public
-        view
-        returns (bytes memory)
-    {
-        return abi.encode(ACK_TAG, block.chainid, address(this), transferId, envelopeHash, decision, reason);
+    function answerPayload(
+        bytes32 transferId,
+        address originator,
+        bytes32 envelopeHash,
+        Decision decision,
+        uint8 reason
+    ) public view returns (bytes memory) {
+        return abi.encode(ACK_TAG, block.chainid, address(this), transferId, originator, envelopeHash, decision, reason);
     }
 
     /// Fails closed: an inactive precompile answers with empty data rather than reverting, so every return is
     /// length-checked before decoding, and the key must be ML-DSA-87 with proven possession.
     function _requirePqSignature(address signer, bytes memory payload, bytes calldata signature) internal view {
-        (bool ok, bytes memory ret) = PQC_KEY_STATUS.staticcall(abi.encodeWithSignature("pqcKeyStatus(address)", signer));
+        (bool ok, bytes memory ret) =
+            PQC_KEY_STATUS.staticcall(abi.encodeWithSignature("pqcKeyStatus(address)", signer));
         if (!ok || ret.length < 160) revert KeyNotUsable(signer);
         (bool registered, uint8 algorithmId, bytes memory pubkey, bool possessionProven) =
             abi.decode(ret, (bool, uint8, bytes, bool));
-        if (!registered || algorithmId != ML_DSA_87 || !possessionProven || pubkey.length != ML_DSA_87_PUBLIC_KEY_LENGTH) {
+        if (
+            !registered || algorithmId != ML_DSA_87 || !possessionProven || pubkey.length != ML_DSA_87_PUBLIC_KEY_LENGTH
+        ) {
             revert KeyNotUsable(signer);
         }
         (ok, ret) = PQC_VERIFY.staticcall(
-            abi.encodeWithSignature("pqcVerify(bytes,bytes,bytes)", pubkey, signature, bytes.concat(MESSAGE_PREFIX, payload))
+            abi.encodeWithSignature(
+                "pqcVerify(bytes,bytes,bytes)", pubkey, signature, bytes.concat(MESSAGE_PREFIX, payload)
+            )
         );
         if (!ok || ret.length != 32 || abi.decode(ret, (uint256)) != 1) revert BadSignature(signer);
     }

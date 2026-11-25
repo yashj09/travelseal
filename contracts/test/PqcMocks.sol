@@ -13,7 +13,9 @@ contract MockPqcKeyStatus {
     mapping(address => Status) internal statuses;
     bool public inactive;
 
-    function set(address account, bool registered, uint8 algorithmId, bytes calldata pubkey, bool possessionProven) external {
+    function set(address account, bool registered, uint8 algorithmId, bytes calldata pubkey, bool possessionProven)
+        external
+    {
         statuses[account] = Status(registered, algorithmId, pubkey, possessionProven);
     }
 
@@ -22,7 +24,9 @@ contract MockPqcKeyStatus {
     }
 
     function pqcKeyStatus(address account) external view returns (bool, uint8, bytes memory, bool) {
-        if (inactive) assembly { return(0, 0) }
+        if (inactive) {
+            assembly { return(0, 0) }
+        }
         Status storage s = statuses[account];
         return (s.registered, s.algorithmId, s.pubkey, s.possessionProven);
     }
@@ -41,8 +45,14 @@ contract MockPqcVerify {
         inactive = v;
     }
 
-    function pqcVerify(bytes calldata pubkey, bytes calldata signature, bytes calldata message) external view returns (bool) {
-        if (inactive) assembly { return(0, 0) }
+    function pqcVerify(bytes calldata pubkey, bytes calldata signature, bytes calldata message)
+        external
+        view
+        returns (bool)
+    {
+        if (inactive) {
+            assembly { return(0, 0) }
+        }
         return accepted[keccak256(abi.encode(pubkey, signature, message))];
     }
 }

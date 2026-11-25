@@ -12,7 +12,7 @@ export function sealRecord(record: TravelRecord, recipients: SealRecipient[]): U
 
 export type OpenResult =
   | { ok: true; record: TravelRecord }
-  | { ok: false; reason: "DECRYPTION_FAILED" | "NOT_A_RECIPIENT" | "MALFORMED_ENVELOPE" | "TERMS_MISMATCH" };
+  | { ok: false; reason: "DECRYPTION_FAILED" | "NOT_A_RECIPIENT" | "MALFORMED_ENVELOPE" | "MALFORMED_RECORD" | "TERMS_MISMATCH" };
 
 /**
  * Open with terms rebuilt from the chain. A changed amount, denom, sender, beneficiary or transfer id fails AES-GCM
@@ -27,8 +27,14 @@ export function openRecord(envelope: Uint8Array, keys: SealKeyPair, observed: Tr
       if (isQoreSealError(e, code)) return { ok: false, reason: code };
     throw e;
   }
-  const record = decodeRecord(bytes);
-  const t = termsOf(record);
+  // The plaintext is authenticated but still written by the sender, who may have sealed something that is not a record.
+  let record: TravelRecord, t: TransferTerms;
+  try {
+    record = decodeRecord(bytes);
+    t = termsOf(record);
+  } catch {
+    return { ok: false, reason: "MALFORMED_RECORD" };
+  }
   const same = (Object.keys(t) as (keyof TransferTerms)[]).every((k) => t[k] === observed[k]);
   return same ? { ok: true, record } : { ok: false, reason: "TERMS_MISMATCH" };
 }

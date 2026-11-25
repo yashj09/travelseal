@@ -25,7 +25,7 @@ describe("ledger signatures", () => {
 
   it("separates post and answer payloads", () => {
     const post = postPayload(ledger, args);
-    const answer = answerPayload(ledger, { transferId: args.transferId, envelopeHash: args.envelopeHash, decision: Decision.Accepted, reason: 0 });
+    const answer = answerPayload(ledger, { transferId: args.transferId, originator: args.originator, envelopeHash: args.envelopeHash, decision: Decision.Accepted, reason: 0 });
     expect(post.slice(0, 66)).not.toBe(answer.slice(0, 66));
   });
 

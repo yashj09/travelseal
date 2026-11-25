@@ -39,11 +39,15 @@ export function observeTransfer(tx: TxJson, receiver: string): Observed {
   };
 }
 
-/** Find the deposit that carries `transferId` to `receiver` (used by auditors, who never saw the deposit arrive). */
-export async function findTransfer(chain: Chain, receiver: string, transferId: TransferId): Promise<Observed | undefined> {
+/**
+ * Every deposit from `originator` to `receiver` that carries `transferId`, newest first. Deposits from anyone else
+ * are ignored: a memo is public, so a third party can copy it onto a transfer of their own.
+ */
+export async function findTransfers(chain: Chain, receiver: string, transferId: TransferId, originator: string): Promise<Extract<Observed, { ok: true }>[]> {
+  const out: Extract<Observed, { ok: true }>[] = [];
   for (const tx of await chain.searchTxs(`transfer.recipient='${receiver}'`)) {
     const o = observeTransfer(tx as TxJson, receiver);
-    if (o.ok && o.terms.transferId === transferId) return o;
+    if (o.ok && o.terms.transferId === transferId && o.terms.originator === originator) out.push(o);
   }
-  return undefined;
+  return out;
 }

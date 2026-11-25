@@ -35,7 +35,7 @@ export function walletClient(account: UnifiedAccount, rpc = EVM_RPC) {
   return createWalletClient({ account: privateKeyToAccount(account.privateKey as Hex), chain: diana, transport: http(rpc) });
 }
 
-/** Mirrors TravelRuleLedger.postPayload. A unit test and a live eth_call compare the two. */
+/** Mirrors TravelRuleLedger.postPayload. The flows refuse to sign unless a live eth_call of the contract returns the same bytes. */
 export function postPayload(ledger: Address, a: { transferId: Hex; originator: Address; beneficiary: Address; period: number; envelopeHash: Hex }): Hex {
   return encodeAbiParameters(
     [{ type: "bytes32" }, { type: "uint256" }, { type: "address" }, { type: "bytes32" }, { type: "address" }, { type: "address" }, { type: "uint32" }, { type: "bytes32" }],
@@ -44,10 +44,10 @@ export function postPayload(ledger: Address, a: { transferId: Hex; originator: A
 }
 
 /** Mirrors TravelRuleLedger.answerPayload. */
-export function answerPayload(ledger: Address, a: { transferId: Hex; envelopeHash: Hex; decision: DecisionCode; reason: number }): Hex {
+export function answerPayload(ledger: Address, a: { transferId: Hex; originator: Address; envelopeHash: Hex; decision: DecisionCode; reason: number }): Hex {
   return encodeAbiParameters(
-    [{ type: "bytes32" }, { type: "uint256" }, { type: "address" }, { type: "bytes32" }, { type: "bytes32" }, { type: "uint8" }, { type: "uint8" }],
-    [ACK_TAG, BigInt(EVM_CHAIN_ID), ledger, a.transferId, a.envelopeHash, a.decision, a.reason],
+    [{ type: "bytes32" }, { type: "uint256" }, { type: "address" }, { type: "bytes32" }, { type: "address" }, { type: "bytes32" }, { type: "uint8" }, { type: "uint8" }],
+    [ACK_TAG, BigInt(EVM_CHAIN_ID), ledger, a.transferId, a.originator, a.envelopeHash, a.decision, a.reason],
   );
 }
 

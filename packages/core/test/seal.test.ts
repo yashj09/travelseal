@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import { verifyRecipientCard, type SealRecipient } from "@qorechain/qoreseal";
+import { seal, verifyRecipientCard, type SealRecipient } from "@qorechain/qoreseal";
 import {
-  CHAIN_ID, bindingAad, demoRecord, identityFromMnemonic, makeCard, newMnemonic, newTransferId, openRecord, sealRecord,
+  CHAIN_ID, SEAL_PURPOSE, bindingAad, demoRecord, identityFromMnemonic, makeCard, newMnemonic, newTransferId, openRecord, sealRecord,
   termsOf, transferIdFromMemo, transferMemo, type Identity, type TravelRecord,
 } from "../src/index.js";
 
@@ -66,5 +66,10 @@ describe("sealed travel record", () => {
     const eve = { ...auditorQ3.seal, x25519SecretKey: receiver.seal.x25519SecretKey, x25519PublicKey: receiver.seal.x25519PublicKey, mlkemPublicKey: receiver.seal.mlkemPublicKey };
     const out = openRecord(envelope, eve, termsOf(record));
     expect(out.ok).toBe(false);
+  });
+
+  it("reports sealed junk as a malformed record instead of throwing", () => {
+    const junk = seal({ chainId: CHAIN_ID, purpose: SEAL_PURPOSE, recipients: [offlineRecipient(receiver)], plaintext: new TextEncoder().encode("{}"), aad: bindingAad(termsOf(record)), mode: "hybrid" });
+    expect(openRecord(junk, receiver.seal, termsOf(record))).toEqual({ ok: false, reason: "MALFORMED_RECORD" });
   });
 });

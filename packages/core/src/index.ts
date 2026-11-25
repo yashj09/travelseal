@@ -11,5 +11,5 @@ export { msg } from "@qorechain/sdk";
 export * from "./ledger.js";
 export * from "./observe.js";
 export * from "./trisaClassic.js";
-export { evmToQor } from "@qorechain/sdk";
+export { evmToQor, qorToEvm } from "@qorechain/sdk";
 export * from "./flows.js";
