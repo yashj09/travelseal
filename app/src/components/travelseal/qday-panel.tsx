@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { AtomIcon } from "lucide-react"
 import {
-  CHAIN_ID, decodeRecord, demoRecord, encodeRecord, evmToQor, findTransfer, generateRsaKeyPair, identityFromMnemonic, makeCard,
+  CHAIN_ID, decodeRecord, demoRecord, encodeRecord, evmToQor, findTransfers, generateRsaKeyPair, identityFromMnemonic, makeCard,
   newMnemonic, newTransferId, openClassic, openRecord, sealClassic, sealRecord, termsOf, type TravelRecord,
 } from "@travelseal/core"
 import { verifyRecipientCard, type SealKeyPair } from "@qorechain/qoreseal"
@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Item, ItemContent, ItemDescription, ItemGroup, ItemTitle } from "@/components/ui/item"
 import { Spinner } from "@/components/ui/spinner"
-import { useSession } from "@/lib/session"
+import { errorLine, useSession } from "@/lib/session"
+import { FlowError } from "./flow-error"
 import { RecordCard } from "./record-card"
 
 interface Result {
@@ -26,11 +27,18 @@ interface Result {
 /** Eve kept copies of both envelopes. A future quantum computer breaks RSA and X25519 for her, not ML-KEM. */
 const eveKeys = (real: SealKeyPair): SealKeyPair => ({ ...real, mlkemSecretKey: crypto.getRandomValues(new Uint8Array(real.mlkemSecretKey.length)) })
 
+/** The badge follows the result: if an attack ever opened an envelope, this must say so. */
+function Sealed({ outcome }: { outcome: string }) {
+  return outcome === "opened" ? <Badge variant="destructive">opened by Eve</Badge> : <Badge variant="success">still sealed: {outcome}</Badge>
+}
+
 export function QdayPanel() {
   const { mode, run, busy, chain } = useSession()
   const [result, setResult] = useState<Result>()
+  const [error, setError] = useState<string>()
 
-  const simulate = () =>
+  const simulate = () => {
+    setError(undefined)
     run("simulate Q-Day", async (flows) => {
       const log = (label: string, detail: string) => flows.log({ label, detail, lane: "local" })
       const [mumbai, singapore] = await Promise.all([identityFromMnemonic("vasp-mumbai", newMnemonic()), identityFromMnemonic("vasp-singapore", newMnemonic())])
@@ -47,11 +55,11 @@ export function QdayPanel() {
       const r: Result = { classicBytes: JSON.stringify(classic).length, sealedBytes: sealed.length, eveClassic, eveTravelSeal: t.ok ? "opened" : t.reason, ownerStillOpens: openRecord(sealed, singapore.seal, termsOf(record)).ok }
 
       if (mode.kind === "live") {
-        const latest = (await flows.scanPosted(undefined, true))[0]
+        const latest = (await flows.scanPosted({}, true))[0]
         const receiver = mode.ids["vasp-singapore"]
         if (latest && receiver) {
-          const landed = await findTransfer(chain, evmToQor(latest.beneficiary), latest.transferId)
-          if (landed?.ok) {
+          const landed = (await findTransfers(chain, evmToQor(latest.beneficiary), latest.transferId, evmToQor(latest.originator)))[0]
+          if (landed) {
             const o = openRecord(latest.envelope, eveKeys(receiver.seal), landed.terms)
             r.onChain = { transferId: latest.transferId, eve: o.ok ? "opened" : o.reason }
             log("Q-Day: on-chain envelope", `latest real envelope ${latest.transferId.slice(0, 8)}… with Singapore's X25519 secret: ${o.ok ? "OPENED" : o.reason}`)
@@ -59,7 +67,8 @@ export function QdayPanel() {
         }
       }
       setResult(r)
-    }).catch(() => undefined)
+    }).catch((e) => setError(errorLine(e)))
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -75,6 +84,7 @@ export function QdayPanel() {
             {busy === "simulate Q-Day" ? <Spinner data-icon="inline-start" /> : <AtomIcon data-icon="inline-start" />}
             Harvest both copies, then break RSA and X25519
           </Button>
+          <FlowError title="The simulation didn't finish" error={error} />
           {result && (
             <ItemGroup className="gap-2">
               <Item variant="outline">
@@ -85,14 +95,14 @@ export function QdayPanel() {
               </Item>
               <Item variant="outline">
                 <ItemContent>
-                  <ItemTitle className="flex flex-wrap items-center gap-2">TravelSeal envelope <Badge variant="success">still sealed: {result.eveTravelSeal}</Badge></ItemTitle>
+                  <ItemTitle className="flex flex-wrap items-center gap-2">TravelSeal envelope <Sealed outcome={result.eveTravelSeal} /></ItemTitle>
                   <ItemDescription>{result.sealedBytes} bytes. Hybrid ML-KEM-1024 + X25519: breaking X25519 isn't enough. The real receiver {result.ownerStillOpens ? "still opens it" : "could not open it"}.</ItemDescription>
                 </ItemContent>
               </Item>
               {result.onChain && (
                 <Item variant="outline">
                   <ItemContent>
-                    <ItemTitle className="flex flex-wrap items-center gap-2">Latest real envelope on qorechain-diana <Badge variant="success">still sealed: {result.onChain.eve}</Badge></ItemTitle>
+                    <ItemTitle className="flex flex-wrap items-center gap-2">Latest real envelope on qorechain-diana <Sealed outcome={result.onChain.eve} /></ItemTitle>
                     <ItemDescription className="font-mono">transfer {result.onChain.transferId.slice(0, 12)}…, attacked with Singapore's real X25519 secret</ItemDescription>
                   </ItemContent>
                 </Item>

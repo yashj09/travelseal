@@ -39,9 +39,13 @@ export function Inspector() {
               <ItemContent>
                 <ItemTitle className="flex flex-wrap items-center gap-2">
                   {s.label}
-                  <Badge variant={s.label === "error" ? "destructive" : s.lane === "evm" ? "success" : "secondary"} className="font-mono">
-                    {LANE[s.lane]}
-                  </Badge>
+                  {s.label === "error" ? (
+                    <Badge variant="destructive">{s.flow} failed</Badge>
+                  ) : (
+                    <Badge variant={s.lane === "evm" ? "success" : "secondary"} className="font-mono">
+                      {LANE[s.lane]}
+                    </Badge>
+                  )}
                 </ItemTitle>
                 <ItemDescription>{s.detail}</ItemDescription>
               </ItemContent>

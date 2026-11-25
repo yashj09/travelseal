@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { useSession } from "@/lib/session"
+import { cn } from "@/lib/utils"
 
 /** Live block height of qorechain-diana, read through the same-origin REST proxy. */
 export function NetworkBadge() {
@@ -21,7 +22,7 @@ export function NetworkBadge() {
   }, [chain])
   return (
     <Badge variant="outline" className="font-mono">
-      <span className={height ? "size-1.5 animate-pulse rounded-full bg-success" : "size-1.5 rounded-full bg-muted-foreground"} />
+      <span className={cn("size-1.5 rounded-full", height ? "animate-pulse bg-success" : "bg-muted-foreground")} />
       qorechain-diana {height ? `#${Number(height).toLocaleString()}` : ""}
     </Badge>
   )

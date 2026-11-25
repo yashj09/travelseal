@@ -69,7 +69,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       try {
         return await fn(flowsFor(flow))
       } catch (e) {
-        setSteps((prev) => [{ label: "error", detail: e instanceof Error ? e.message : String(e), lane: "local", at: new Date(), flow }, ...prev])
+        setSteps((prev) => [{ label: "error", detail: errorLine(e), lane: "local", at: new Date(), flow }, ...prev])
         throw e
       } finally {
         setBusy(null)
@@ -101,4 +101,10 @@ export function toBaseUnits(input: string): string | undefined {
   const [whole, frac = ""] = input.trim().split(".")
   const units = BigInt(whole!) * 1_000_000n + BigInt(frac.padEnd(6, "0"))
   return units > 0n ? units.toString() : undefined
+}
+
+/** One readable line from whatever a flow threw (viem and cosmjs errors carry long multi-line details). */
+export function errorLine(e: unknown): string {
+  const m = (e as { shortMessage?: string })?.shortMessage ?? (e instanceof Error ? e.message : String(e))
+  return m.split("\n")[0]!.slice(0, 240)
 }
