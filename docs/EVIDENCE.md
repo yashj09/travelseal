@@ -65,3 +65,59 @@ Appended by the scripts as each step runs. Times are UTC.
 | 2026-11-18T21:52:09 | audit q3 | auditor-q3 opened 1 of 1 Q3 records against their landed transfers; 0 had no matching transfer |  |
 | 2026-11-18T21:52:46 | top up vasp-singapore | 10 QOR from vasp-mumbai | [`3853C06EC5…`](https://explore.qore.network/tx/3853C06EC56F189B36E0C3184A62D9B902C21DAF68EC02884C083B7B0663BE3C) |
 | 2026-11-19T20:35:36 | audit 20264 | auditor-q4 opened 1 of 3 records against their landed transfers, flagged 1, 1 had no transfer |  |
+| 2026-11-25T18:35:13 | deploy: open EVM window | hybrid-signed, 1 tx, 120 blocks, value cap = this deploy's max fee | [`DD8F362068…`](https://explore.qore.network/tx/DD8F362068B8A0A243865125E629FCC66876C6E568AFEBA639290F7C916F8104) |
+| 2026-11-25T18:35:16 | deploy TravelRuleLedger | at 0xccdff2afed218fed224811edc18b5ebac569536c, gas 953222 | [`0x12049615…`](https://explore.qore.network/tx/0x12049615fd00164483f2688674075ad83389cf8293132d7b38efd1a993958386) |
+| 2026-11-25T18:35:20 | deploy: close EVM window | hybrid-signed | [`CCD68A8486…`](https://explore.qore.network/tx/CCD68A84863BC02A1E031123E0DC1F2976AB0E1D3DD177A8940350AA6977F716) |
+| 2026-11-25T18:35:22 | resolve recipients | vasp-singapore and auditor-q4: ML-DSA-87 key with proof of possession, ML-KEM-1024 key and card all check out on chain |  |
+| 2026-11-25T18:35:22 | seal record | 4333 B hybrid ML-KEM-1024 + X25519 envelope, bound to transfer 26a80adb…, 0.25 fUSD |  |
+| 2026-11-25T18:35:27 | post record: open EVM window | vasp-mumbai, scoped to the ledger, 1 tx (hybrid-signed) | [`DC0A7988D8…`](https://explore.qore.network/tx/DC0A7988D827F332FDF02FD49842305A05DA75456F4D898B929552431E6FA281) |
+| 2026-11-25T18:35:29 | post record | postRecord: ML-DSA-87 signature checked on chain by pqcVerify, gas 405684 | [`0x4883c1f9…`](https://explore.qore.network/tx/0x4883c1f96acb2c54ae6c01f645b8f32bae5c007df05274468e2c8ea7442a01a3) |
+| 2026-11-25T18:35:33 | post record: close EVM window | vasp-mumbai | [`EA22192D4E…`](https://explore.qore.network/tx/EA22192D4EDFD2BCF2D72EB8201105B82177AD39E96F51B1E2572209305BA9CE) |
+| 2026-11-25T18:35:36 | transfer | 0.000001 QOR to qor1ketaxqdh…, memo travelseal:26a80adb… (hybrid-signed) | [`F2847640CD…`](https://explore.qore.network/tx/F2847640CD872AB63BA7DB535C02375BCE9E695227144CF866822470C341BFA2) |
+| 2026-11-25T18:35:36 | receive | deposit of 0.000001 QOR from qor1ws53czmd… read from the chain, transfer 26a80adb… | [`F2847640CD…`](https://explore.qore.network/tx/F2847640CD872AB63BA7DB535C02375BCE9E695227144CF866822470C341BFA2) |
+| 2026-11-25T18:35:36 | no record | the sender of this deposit posted no TravelSeal record for it to us; left unanswered |  |
+| 2026-11-25T18:35:39 | transfer | 0.25 fUSD to qor1ketaxqdh…, memo travelseal:26a80adb… (hybrid-signed) | [`0549FEC89F…`](https://explore.qore.network/tx/0549FEC89FA13D48C824AE58F937A5334124BE5A5E155C5C0D6365E6B39337DE) |
+| 2026-11-25T18:35:40 | receive | deposit of 0.25 fUSD from qor1ywtz48pc… read from the chain, transfer 26a80adb… | [`0549FEC89F…`](https://explore.qore.network/tx/0549FEC89FA13D48C824AE58F937A5334124BE5A5E155C5C0D6365E6B39337DE) |
+| 2026-11-25T18:35:41 | open record | opened with the terms of the deposit that landed |  |
+| 2026-11-25T18:35:46 | accept record: open EVM window | vasp-singapore, scoped to the ledger, 1 tx (hybrid-signed) | [`3826184397…`](https://explore.qore.network/tx/38261843977A5EF7A6AD787A1D035CC31339981E290606B96671584BDD66A0AC) |
+| 2026-11-25T18:35:49 | accept record | answer: ML-DSA-87 signature checked on chain by pqcVerify, gas 241252 | [`0xd6d3f009…`](https://explore.qore.network/tx/0xd6d3f009233fe07bf32309cbaccd85abd5520b49735ff553f37a27962ed9c410) |
+| 2026-11-25T18:35:52 | accept record: close EVM window | vasp-singapore | [`1DFCC25F80…`](https://explore.qore.network/tx/1DFCC25F80285ED3865A3A506757052BD4311AAEEB57FC781F2C08471CE7A6A8) |
+| 2026-11-25T18:35:55 | resolve recipients | vasp-singapore and auditor-q4: ML-DSA-87 key with proof of possession, ML-KEM-1024 key and card all check out on chain |  |
+| 2026-11-25T18:35:55 | seal record | 4333 B hybrid ML-KEM-1024 + X25519 envelope, bound to transfer 1c5b8aea…, 0.25 fUSD |  |
+| 2026-11-25T18:36:00 | post record: open EVM window | vasp-mumbai, scoped to the ledger, 1 tx (hybrid-signed) | [`DE2FBBD92A…`](https://explore.qore.network/tx/DE2FBBD92AE8E66AFBB2EF9C770F55713F688F5097EFCB222CBA9616F6FF7EAE) |
+| 2026-11-25T18:36:04 | post record | postRecord: ML-DSA-87 signature checked on chain by pqcVerify, gas 405828 | [`0x7b889775…`](https://explore.qore.network/tx/0x7b889775297cad6e9725ada6e99481249bc251d97821ce4750722170283d9660) |
+| 2026-11-25T18:36:07 | post record: close EVM window | vasp-mumbai | [`309EF76CD2…`](https://explore.qore.network/tx/309EF76CD209C43101E542FC8FE3DA5C6236E2E0B60728CC8DCE8979BBB039B9) |
+| 2026-11-25T18:36:10 | transfer | 0.2 fUSD to qor1ketaxqdh…, memo travelseal:1c5b8aea… (hybrid-signed) | [`8A31836FB1…`](https://explore.qore.network/tx/8A31836FB1F0A4770BC9CDBE460F2ED7068B5BBE07A57000A9D00F006DAE38CF) |
+| 2026-11-25T18:36:10 | receive | deposit of 0.2 fUSD from qor1ywtz48pc… read from the chain, transfer 1c5b8aea… | [`8A31836FB1…`](https://explore.qore.network/tx/8A31836FB1F0A4770BC9CDBE460F2ED7068B5BBE07A57000A9D00F006DAE38CF) |
+| 2026-11-25T18:36:11 | open record | does not open with the terms of the deposit that landed (DECRYPTION_FAILED) |  |
+| 2026-11-25T18:36:16 | reject record: open EVM window | vasp-singapore, scoped to the ledger, 1 tx (hybrid-signed) | [`9BDADC2912…`](https://explore.qore.network/tx/9BDADC29124724E3DEA3760CC6C906F9DA3A25905C436C8E144D990372CD0501) |
+| 2026-11-25T18:36:19 | reject record | answer: ML-DSA-87 signature checked on chain by pqcVerify, gas 241288 | [`0x2ee75969…`](https://explore.qore.network/tx/0x2ee75969c313bdc559e685c2dc1fef3479134b6d7109e8897cbe238fc48428d0) |
+| 2026-11-25T18:36:22 | reject record: close EVM window | vasp-singapore | [`17528C168C…`](https://explore.qore.network/tx/17528C168C78C2ED625C6C9EF37994EE1C231881902FB95BB41EE80437E9CF59) |
+| 2026-11-25T18:36:25 | resolve recipients | vasp-singapore and auditor-q4: ML-DSA-87 key with proof of possession, ML-KEM-1024 key and card all check out on chain |  |
+| 2026-11-25T18:36:25 | seal record | 4333 B hybrid ML-KEM-1024 + X25519 envelope, bound to transfer 310de88b…, 0.25 fUSD |  |
+| 2026-11-25T18:36:31 | post record: open EVM window | vasp-mumbai, scoped to the ledger, 1 tx (hybrid-signed) | [`4E98F6DBC3…`](https://explore.qore.network/tx/4E98F6DBC334E1767C5B02408E2557D393FAF79D327FDCDE95EED17611CD87AC) |
+| 2026-11-25T18:36:33 | post record | postRecord: ML-DSA-87 signature checked on chain by pqcVerify, gas 405756 | [`0xa401dc44…`](https://explore.qore.network/tx/0xa401dc44444e23671844f0121a0fd0eb6089b6e7778d9eb348fddb5cca28bdcb) |
+| 2026-11-25T18:36:37 | post record: close EVM window | vasp-mumbai | [`78F29A503D…`](https://explore.qore.network/tx/78F29A503D58161549725DF464014A31967117AB9207A3E8B6C7D7A322D995CC) |
+| 2026-11-25T18:36:39 | transfer | 0.25 fUSD to qor1ketaxqdh…, memo travelseal:310de88b… (hybrid-signed) | [`97E3C812D8…`](https://explore.qore.network/tx/97E3C812D8D4EAD798F7FF2E8B056175267014526116129143E6A63C9447430A) |
+| 2026-11-25T18:36:40 | receive | deposit of 0.25 fUSD from qor1ywtz48pc… read from the chain, transfer 310de88b… | [`97E3C812D8…`](https://explore.qore.network/tx/97E3C812D8D4EAD798F7FF2E8B056175267014526116129143E6A63C9447430A) |
+| 2026-11-25T18:36:41 | open record | opened with the terms of the deposit that landed |  |
+| 2026-11-25T18:36:46 | accept record: open EVM window | vasp-singapore, scoped to the ledger, 1 tx (hybrid-signed) | [`640D5D0895…`](https://explore.qore.network/tx/640D5D0895EC04F95E4C2C01ACADD2AFF3221E0399D26E580B72D8A945C26390) |
+| 2026-11-25T18:36:49 | accept record | answer: ML-DSA-87 signature checked on chain by pqcVerify, gas 241348 | [`0x0c4fcff1…`](https://explore.qore.network/tx/0x0c4fcff10eff5ea298af7c6f2e88917fe3a98278a17cb6b528e287eb1aa1e40f) |
+| 2026-11-25T18:36:53 | accept record: close EVM window | vasp-singapore | [`E454E87A19…`](https://explore.qore.network/tx/E454E87A191DC381C20AD08D0A02264D159B765413982981C4EB75C41BF1B2C9) |
+| 2026-11-25T18:36:54 | live positive check | valid ML-DSA-87 signature simulates successfully |  |
+| 2026-11-25T18:36:55 | live negative check | forged signature (all zero bytes): reverted BadSignature |  |
+| 2026-11-25T18:36:55 | live negative check | valid signature, envelope changed by one byte: reverted BadSignature |  |
+| 2026-11-25T18:36:56 | live negative check | valid signature claimed for another originator: reverted BadSignature |  |
+| 2026-11-25T18:36:56 | live negative check | originator with no registered PQC key: reverted KeyNotUsable |  |
+| 2026-11-25T18:37:01 | audit 20264 | auditor-q4 opened 2 of 3 records against their landed transfers, flagged 1, 0 had no transfer |  |
+| 2026-11-25T18:37:12 | resolve recipients | vasp-singapore and auditor-q3: ML-DSA-87 key with proof of possession, ML-KEM-1024 key and card all check out on chain |  |
+| 2026-11-25T18:37:12 | seal record | 4333 B hybrid ML-KEM-1024 + X25519 envelope, bound to transfer 25891c2f…, 0.25 fUSD |  |
+| 2026-11-25T18:37:17 | post record: open EVM window | vasp-mumbai, scoped to the ledger, 1 tx (hybrid-signed) | [`2B59FE82F4…`](https://explore.qore.network/tx/2B59FE82F4EF89778BC08D3E5BFE7AD24986775CACC64779E92E9A0BA93C9458) |
+| 2026-11-25T18:37:20 | post record | postRecord: ML-DSA-87 signature checked on chain by pqcVerify, gas 405804 | [`0xf01cdcd0…`](https://explore.qore.network/tx/0xf01cdcd02ef0ce8167b73285dfad64114c41805fce624291244c917005fa648f) |
+| 2026-11-25T18:37:24 | post record: close EVM window | vasp-mumbai | [`02176C084C…`](https://explore.qore.network/tx/02176C084C73E734483237F07570E98ED020A95743F83AD116C40ED44C248B3C) |
+| 2026-11-25T18:37:27 | transfer | 0.25 fUSD to qor1ketaxqdh…, memo travelseal:25891c2f… (hybrid-signed) | [`874B16D787…`](https://explore.qore.network/tx/874B16D787B069FFE9BC8FB366C1032DD70B3CDF4866525AF0005C6ED015D389) |
+| 2026-11-25T18:37:27 | receive | deposit of 0.25 fUSD from qor1ywtz48pc… read from the chain, transfer 25891c2f… | [`874B16D787…`](https://explore.qore.network/tx/874B16D787B069FFE9BC8FB366C1032DD70B3CDF4866525AF0005C6ED015D389) |
+| 2026-11-25T18:37:29 | open record | opened with the terms of the deposit that landed |  |
+| 2026-11-25T18:37:33 | accept record: open EVM window | vasp-singapore, scoped to the ledger, 1 tx (hybrid-signed) | [`C9913CE02B…`](https://explore.qore.network/tx/C9913CE02B5768103DC5EC5EA590C13A16031B60F0C693FE6700703689F289FD) |
+| 2026-11-25T18:37:36 | accept record | answer: ML-DSA-87 signature checked on chain by pqcVerify, gas 241180 | [`0x42f43255…`](https://explore.qore.network/tx/0x42f43255993b2be7dd88001be9f0ce7082ebe9df894e98c9069d34bb16b31d62) |
+| 2026-11-25T18:37:40 | accept record: close EVM window | vasp-singapore | [`F623C40FDB…`](https://explore.qore.network/tx/F623C40FDB14871E92ED5FBEB75B61FFAC8456FF1F511ECA6A8ADEEAC2296950) |

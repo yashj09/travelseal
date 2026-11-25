@@ -41,4 +41,3 @@ export const saveTransfer = (t: TransferFile) => {
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, `${t.transferId}.json`), JSON.stringify(t, null, 2) + "\n");
 };
-export const loadTransfer = (id: string): TransferFile => JSON.parse(readFileSync(join(dir, `${id}.json`), "utf8"));

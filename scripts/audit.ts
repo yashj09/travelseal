@@ -11,7 +11,7 @@ let auditor;
 try {
   auditor = await loadIdentity(`auditor-${quarter}`);
 } catch {
-  evidence(`audit ${quarter}`, `auditor-${quarter}'s key was destroyed; every ${quarter.toUpperCase()} envelope is now permanently unreadable`);
+  evidence(`audit ${quarter}`, `auditor-${quarter}'s key was destroyed; the auditor's copy of every ${quarter.toUpperCase()} record can no longer be opened (the receiving exchange keeps its own access)`);
   process.exit(0);
 }
 for (const e of await flows.auditQuarter(auditor, quarter === "q3" ? 20263 : 20264)) {

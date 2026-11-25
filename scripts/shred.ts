@@ -4,8 +4,9 @@ import { loadIdentity, shred } from "./lib/secrets.js";
 
 /**
  * pnpm ts shred.ts q3 --yes   End of retention for a quarter: withdraw the auditor's ML-KEM key from the registry so
- * nobody seals to it again, then destroy its mnemonic. Irreversible by design. Unlike an RSA envelope, a copy someone
- * kept cannot be opened later by a quantum computer either.
+ * nobody seals to it again, then delete its mnemonic from .secrets/. After that the auditor's copy of that quarter's
+ * records can't be opened, and unlike an RSA-wrapped copy, a quantum computer doesn't change that. The receiving
+ * exchange still holds its own key. A production system would destroy the key inside an HSM; this deletes a file.
  */
 const quarter = process.argv[2];
 if (quarter !== "q3" && quarter !== "q4") throw new Error("usage: pnpm ts shred.ts q3|q4 --yes");
