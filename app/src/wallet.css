@@ -1,0 +1,52 @@
+.wallet-shell {
+  min-height: 100svh;
+  color: var(--foreground);
+  background: var(--background);
+}
+.wallet-header, .wallet-main { width: min(1160px, 92%); margin-inline: auto }
+.wallet-header { height: 76px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border) }
+.wallet-brand { display: inline-flex; gap: 10px; align-items: center; font-size: 1.48rem; font-weight: 680; letter-spacing: -.06em }
+.wallet-brand svg { background: #c3fa76; color: #17251b; border-radius: 30%; width: 34px; height: 34px; padding: 2px }
+.wallet-mode { font: .82rem var(--font-mono); border: 1px solid var(--border); background: var(--card); border-radius: 99px; padding: 7px 14px }
+.wallet-overview, .wallet-workspace { display: grid; grid-template-columns: minmax(0, 1.85fr) minmax(275px, 1fr); gap: 20px }
+.wallet-overview { margin: 32px 0 24px }
+.wallet-caption { display: flex; gap: 8px; align-items: center; font-size: .88rem; font-weight: 550 }
+.corridor, .wallet-network { border-radius: 22px; padding: clamp(22px,3vw,36px) }
+.corridor { isolation: isolate; position: relative; overflow: hidden; background: linear-gradient(112deg,#e1ff9e,#a8e895 65%,#80cead); color: #172d23; display: flex; flex-direction: column; justify-content: space-between; min-height: 205px }
+.corridor h1 { font-size: clamp(1.95rem,4.1vw,3.85rem); letter-spacing: -.075em; line-height: 1.07; font-weight: 560; margin: 24px 0 14px }
+.corridor h1 span { font-weight: 300 }
+.corridor p,.wallet-network code { font: .82rem var(--font-mono) }
+.corridor p span { padding-inline: 6px }
+.contours { position: absolute; z-index: -1; right: -120px; top: -100px; width: 340px; height: 425px; opacity: .43; pointer-events: none }
+.contours i { position: absolute; inset: 0; border: 1px solid #31784f; border-radius: 48% 52% 33% 67% }
+.wallet-network { display: flex; flex-direction: column; align-items: start; gap: 10px; background: #202129; border: 1px solid var(--border) }
+.wallet-network .wallet-caption { color: #d4c2ff }
+.wallet-network strong { font-size: clamp(1.35rem,2vw,1.9rem); letter-spacing: -.055em; font-weight: 550 }
+.wallet-network a { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; color: var(--muted-foreground); font-size: .88rem; margin-top: auto; padding-top: 6px }
+.wallet-network a:hover { color: var(--primary) }
+.wallet-workspace { align-items: start; padding-bottom: 50px }
+.wallet-shell .wallet-actions { height: auto; width: 100%; display: grid; grid-template-columns: repeat(4,1fr); gap: 5px; padding: 6px; background: #202129; border-radius: 16px; margin-bottom: 8px }
+.wallet-actions [role=tab] { min-height: 46px; border-radius: 12px; font-weight: 550; gap: 9px }
+.wallet-actions [role=tab][aria-selected=true] { color: #19142c; background: #d7c5ff }
+.wallet-shell [data-slot=card] { --card-spacing: clamp(16px,2.3vw,28px); border-radius: 20px }
+.wallet-shell [data-slot=card-title] { font-size: 1.27rem; font-weight: 590; letter-spacing: -.04em }
+.wallet-shell [data-slot=item] { overflow-wrap: anywhere; background: #22232a; border-radius: 14px }
+.wallet-shell [data-slot=card-footer] { flex-wrap: wrap }
+.wallet-shell [data-slot=button] { white-space: normal; height: auto; min-height: 36px }
+.wallet-activity { position: sticky; top: 20px; min-width: 0 }
+.wallet-activity section { max-height: 76vh; border-radius: 20px; background: #1d1e24 }
+@media(max-width:820px) {
+  .wallet-workspace { grid-template-columns: 1fr }
+  .wallet-overview { grid-template-columns: 1.45fr 1fr }
+  .wallet-activity { position: static }
+}
+@media(max-width:600px) {
+  .wallet-header { height: 62px }
+  .wallet-overview { grid-template-columns: 1fr; gap: 10px; margin: 18px 0 }
+  .corridor { min-height: 160px }
+  .wallet-network { flex-direction: row; flex-wrap: wrap; align-items: center; padding: 14px 17px }
+  .wallet-network strong { font-size: 1rem }
+  .wallet-network .wallet-caption { display: none }
+  .wallet-network a { width: 100%; padding: 0 }
+  .wallet-actions [role=tab] { flex-direction: column; gap: 3px; min-height: 53px }
+}

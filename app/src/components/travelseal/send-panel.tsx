@@ -12,6 +12,8 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { errorLine, fusd, toBaseUnits, useSession } from "@/lib/session"
 import { FlowError } from "./flow-error"
 
+import { TrialPanel } from "./trial-panel"
+
 type Landing = "same" | "less"
 type Quarter = "q4" | "q3"
 const FLOW = "send transfer"
@@ -27,14 +29,7 @@ export function SendPanel() {
   const [unsent, setUnsent] = useState<{ posted: PostedRecord; sent: string }>()
   const [error, setError] = useState<string>()
 
-  if (mode.kind !== "live") {
-    return (
-      <Alert>
-        <AlertTitle>Sending needs the demo keys</AlertTitle>
-        <AlertDescription>This page holds no keys, so it can't seal or sign. Run the repo locally (pnpm app) to send as the Mumbai exchange. The Inbox and Auditor tabs show what has already happened on chain.</AlertDescription>
-      </Alert>
-    )
-  }
+  if (mode.kind !== "live") return <TrialPanel />
   const ids = mode.ids
   const units = toBaseUnits(amount)
   const sent = units && landing === "less" ? ((BigInt(units) * 8n) / 10n).toString() : units

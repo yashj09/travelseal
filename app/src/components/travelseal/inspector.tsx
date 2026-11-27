@@ -1,4 +1,4 @@
-import { ExternalLinkIcon } from "lucide-react"
+import { ActivityIcon, ExternalLinkIcon } from "lucide-react"
 import { EXPLORER } from "@travelseal/core"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -13,11 +13,11 @@ const LANE = { native: "Native · hybrid", evm: "EVM · pqcVerify", local: "In y
 export function Inspector() {
   const { steps, busy } = useSession()
   return (
-    <section className="dark flex h-full flex-col gap-4 rounded-2xl border bg-background bg-lattice p-5 text-foreground">
+    <section className="flex flex-col gap-4 rounded-2xl border bg-card p-5 text-foreground">
       <header className="flex flex-col gap-1">
-        <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">Under the hood</p>
-        <h2 className="text-lg font-semibold">What just happened, on chain</h2>
-        <p className="text-sm text-muted-foreground">Sealing and opening run in your browser. Every post and answer is authorised by an ML-DSA-87 signature the ledger checks with QoreChain's pqcVerify precompile.</p>
+        <ActivityIcon className="mb-2 size-6 text-primary" />
+        <h2 className="text-lg font-semibold">Session activity</h2>
+        <p className="text-sm text-muted-foreground">Browser operations and explorer receipts appear here as you use the wallet.</p>
       </header>
       {busy && (
         <Badge variant="outline" className="font-mono">
@@ -28,8 +28,8 @@ export function Inspector() {
       {steps.length === 0 ? (
         <Empty className="border border-dashed">
           <EmptyHeader>
-            <EmptyTitle>No steps yet</EmptyTitle>
-            <EmptyDescription>Run a flow and each step shows up here with its transaction.</EmptyDescription>
+            <EmptyTitle>No activity yet</EmptyTitle>
+            <EmptyDescription>Try a transfer or run the Q-Day simulation.</EmptyDescription>
           </EmptyHeader>
         </Empty>
       ) : (
