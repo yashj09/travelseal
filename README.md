@@ -1,5 +1,7 @@
 # TravelSeal
 
+[Landing page](https://travelseal.vercel.app) · [Explore the replay](https://travelseal.vercel.app/demo)
+
 Travel-rule data between exchanges, sealed so a copy taken today stays unreadable after Q-Day.
 
 When an exchange sends crypto to another exchange, it must send the customer's identity data with it (the FATF travel rule) and keep it for years. TravelSeal seals each record in the browser with ML-KEM-1024 (QoreSeal hybrid mode) to the receiving exchange's key registered on QoreChain, and binds it to the transfer it describes: if the transfer that lands on chain differs in amount, asset, sender, beneficiary or transfer ID, the record does not open.
