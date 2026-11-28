@@ -1,6 +1,6 @@
 # TravelSeal
 
-[Landing page](https://travelseal.vercel.app) · [Explore the replay](https://travelseal.vercel.app/demo)
+[Landing page](https://travelseal.vercel.app) · [Try a guided transfer](https://travelseal.vercel.app/demo)
 
 Travel-rule data between exchanges, sealed so a copy taken today stays unreadable after Q-Day.
 
@@ -48,11 +48,11 @@ pnpm ts shred.ts q3 --yes # end of retention: remove auditor-q3's ML-KEM key on 
 
 ```sh
 pnpm app                  # vite dev on 127.0.0.1; serves the demo keys from .secrets/ to localhost only
-pnpm --filter @travelseal/app e2e:flow     # drives Send then Inbox through the UI, on chain
+pnpm --filter @travelseal/app e2e:flow     # tracks a live send through the receiver’s signed decision
 pnpm --filter @travelseal/app e2e:screens  # Auditor and Q-Day, in live mode or against a production build (replay)
 ```
 
-The production build (`pnpm app:build`) has no keys: it reads records, transfers and answers from qorechain-diana and runs the Q-Day simulation with fresh in-browser keys. REST goes through a same-origin `/lcd` rewrite (`app/vercel.json`) because the public REST endpoint sends no CORS headers.
+On the public demo, review a sample transfer, compare public, receiver and quarterly auditor access, then confirm the simulation. Choose a smaller deposit to see a rejection and retry with matching amounts. The simulator uses temporary browser keys. Inbox and Auditor read testnet records. Locally, confirming a transfer runs both demo exchanges and links the post, deposit and signed answer to their explorer receipts. REST goes through a same-origin `/lcd` rewrite (`app/vercel.json`) because the public REST endpoint sends no CORS headers.
 
 | Auditor | Q-Day |
 |---|---|

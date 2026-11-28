@@ -24,21 +24,15 @@ await pause(4000)
 
 async function sendAndAnswer(amount, tampered) {
   await page.getByRole("tab", { name: "Send" }).click()
+  if (await page.getByRole("button", { name: "New transfer" }).isVisible()) await page.getByRole("button", { name: "New transfer" }).click()
   await page.getByLabel("Amount in the record (fUSD)").fill(amount)
-  await page.getByText(tampered ? "20% less (tampered)" : "The amount in the record", { exact: true }).click()
+  await page.getByLabel(/20% smaller/).setChecked(tampered)
+  await page.getByRole("button", { name: "Review transfer" }).click()
+  await page.getByRole("button", { name: "Receiving exchange" }).click()
   await pause(2500)
   mark(`send ${tampered ? "tampered" : "honest"}`)
-  await page.getByRole("button", { name: "Seal, post and send" }).click()
-  await page.getByText(/^Sent/).waitFor({ timeout: 240000 })
-  await pause(3000)
-  await page.getByRole("tab", { name: "Inbox" }).click()
-  await page.getByRole("button", { name: "Open and answer" }).first().waitFor({ timeout: 60000 })
-  await pause(2000)
-  mark(`answer ${tampered ? "tampered" : "honest"}`)
-  await page.getByRole("button", { name: "Open and answer" }).first().click()
-  // The inspector's busy badge names the running flow; it disappears only once the answer is on chain.
-  await page.locator("section.dark").getByText("receive and answer").waitFor({ state: "visible", timeout: 10000 })
-  await page.locator("section.dark").getByText("receive and answer").waitFor({ state: "hidden", timeout: 240000 })
+  await page.getByRole("button", { name: "Confirm testnet transfer" }).click()
+  await page.getByRole("list", { name: "Transfer timeline" }).getByText(tampered ? /Exchange rejected/ : /Exchange accepted/).waitFor({ timeout: 240000 })
   await pause(tampered ? 6000 : 5000)
 }
 

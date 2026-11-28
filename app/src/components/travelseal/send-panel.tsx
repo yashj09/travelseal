@@ -1,132 +1,444 @@
 import { useState } from "react"
-import { RotateCwIcon, SendIcon } from "lucide-react"
-import type { PostedRecord } from "@travelseal/core"
-import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
+import { verifyRecipientCard } from "@qorechain/qoreseal"
+import {
+  CHAIN_ID,
+  EXPLORER,
+  TxFailed,
+  demoRecord,
+  findTransfers,
+  identityFromMnemonic,
+  makeCard,
+  newMnemonic,
+  newTransferId,
+  observeTransfer,
+  openRecord,
+  sealRecord,
+  termsOf,
+  type Identity,
+  type TransferTerms,
+  type TravelRecord,
+} from "@travelseal/core"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Field, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Field, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Spinner } from "@/components/ui/spinner"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { errorLine, fusd, toBaseUnits, useSession } from "@/lib/session"
 import { FlowError } from "./flow-error"
+import { PrivacyPreview, type Parties } from "./privacy-preview"
 
-import { TrialPanel } from "./trial-panel"
+interface Draft {
+  record: TravelRecord
+  parties: Parties
+  quarter: string
+  deposit: string
+}
+interface Progress {
+  envelope?: Uint8Array
+  postHash?: string
+  depositHash?: string
+  observed?: TransferTerms
+  decision?: "accepted" | "rejected"
+  answerHash?: string
+  failedDeposit?: boolean
+}
 
-type Landing = "same" | "less"
-type Quarter = "q4" | "q3"
-const FLOW = "send transfer"
+function recipient(id: Identity) {
+  return verifyRecipientCard({
+    card: makeCard(id),
+    chainId: CHAIN_ID,
+    address: id.account.cosmos,
+    pqPublicKey: id.account.pqc.publicKey,
+    mlkemPublicKey: id.seal.mlkemPublicKey,
+  })
+}
 
-/** The originating exchange: seal the record to the receiver and the quarter's auditor, post it, then send the value. */
 export function SendPanel() {
-  const { mode, run, busy } = useSession()
+  const { mode, busy, run, chain } = useSession()
+  const live = mode.kind === "live"
   const [amount, setAmount] = useState("1")
-  const [quarter, setQuarter] = useState<Quarter>("q4")
-  const [landing, setLanding] = useState<Landing>("same")
-  const [result, setResult] = useState<{ posted: PostedRecord; sent: string }>()
-  // A record that is posted but whose transfer failed: the transfer can be retried without posting again.
-  const [unsent, setUnsent] = useState<{ posted: PostedRecord; sent: string }>()
-  const [error, setError] = useState<string>()
-
-  if (mode.kind !== "live") return <TrialPanel />
-  const ids = mode.ids
+  const [quarter, setQuarter] = useState<"q3" | "q4">("q4")
+  const [smaller, setSmaller] = useState(false)
+  const [draft, setDraft] = useState<Draft>()
+  const [progress, setProgress] = useState<Progress>()
+  const [error, setError] = useState("")
+  const [copyStatus, setCopyStatus] = useState("")
   const units = toBaseUnits(amount)
-  const sent = units && landing === "less" ? ((BigInt(units) * 8n) / 10n).toString() : units
-  const sendable = !!units && !!sent && sent !== "0"
+  const deposit =
+    units && smaller ? ((BigInt(units) * 8n) / 10n).toString() : units
+  const update = (part: Partial<Progress>) =>
+    setProgress((p) => ({ ...p, ...part }))
 
-  const transfer = (posted: PostedRecord, toSend: string) =>
-    run(FLOW, async (flows) => {
-      await flows.sendTransfer(ids["vasp-mumbai"]!, ids["vasp-singapore"]!.account.cosmos, posted.transferId, toSend)
-      setUnsent(undefined)
-      setResult({ posted, sent: toSend })
-    })
+  function reset() {
+    setDraft(undefined)
+    setProgress(undefined)
+    setCopyStatus("")
+    setError("")
+  }
 
-  const submit = async () => {
-    setError(undefined)
-    setResult(undefined)
-    setUnsent(undefined)
-    let posted: PostedRecord | undefined
+  async function review() {
+    if (!units || !deposit || deposit === "0") return
+    setError("")
     try {
-      const auditor = ids[quarter === "q3" ? "auditor-q3" : "auditor-q4"]
-      if (!auditor) throw new Error(`auditor-${quarter}'s key has been destroyed, so no new ${quarter.toUpperCase()} records can be sealed to it.`)
-      posted = await run(FLOW, (flows) => flows.postRecord({ sender: ids["vasp-mumbai"]!, receiver: ids["vasp-singapore"]!, auditor, amount: units!, period: quarter === "q3" ? 20263 : 20264 }))
-      setUnsent({ posted, sent: sent! })
-      await transfer(posted, sent!)
+      await run("prepare review", async () => {
+        const auditorRole = quarter === "q3" ? "auditor-q3" : "auditor-q4"
+        const roles = ["vasp-mumbai", "vasp-singapore", auditorRole] as const
+        const [sender, receiver, auditor] = await Promise.all(
+          roles.map((role) =>
+            mode.kind === "live"
+              ? mode.ids[role]
+              : identityFromMnemonic(role, newMnemonic())
+          )
+        )
+        if (!sender || !receiver || !auditor)
+          throw new Error(
+            "An exchange or auditor key is unavailable for this quarter."
+          )
+        const record = demoRecord({
+          transferId: newTransferId(),
+          originatorAddress: sender.account.cosmos,
+          beneficiaryAddress: receiver.account.cosmos,
+          amount: units,
+        })
+        setDraft({
+          parties: { sender, receiver, auditor },
+          record,
+          quarter,
+          deposit,
+        })
+      })
     } catch (e) {
       setError(errorLine(e))
     }
   }
-  const retry = () => {
-    setError(undefined)
-    transfer(unsent!.posted, unsent!.sent).catch((e) => setError(errorLine(e)))
+
+  async function track(d: Draft, previous?: Progress) {
+    setError("")
+    setCopyStatus("")
+    setProgress(previous ?? {})
+    const {
+      record,
+      parties: { sender, receiver, auditor },
+    } = d
+    try {
+      await run(
+        live ? "send and track" : "simulate transfer",
+        async (flows) => {
+          if (!live) {
+            const envelope = sealRecord(record, [
+              recipient(receiver),
+              recipient(auditor),
+            ])
+            const observed = { ...termsOf(record), amount: d.deposit }
+            const opened = openRecord(envelope, receiver.seal, observed)
+            setProgress({
+              envelope,
+              observed,
+              decision: opened.ok ? "accepted" : "rejected",
+            })
+            flows.log({
+              lane: "local",
+              label: "Simulated receiver decision",
+              detail: opened.ok
+                ? "Singapore opened the bound record."
+                : "The observed deposit did not unlock the record.",
+            })
+            return
+          }
+          if (!previous) {
+            const posted = await flows.postRecord({
+              sender,
+              receiver,
+              auditor,
+              amount: record.transfer.amount,
+              period: d.quarter === "q3" ? 20263 : 20264,
+              record,
+            })
+            update({ envelope: posted.envelope, postHash: posted.postTx })
+          }
+          let hash = previous?.depositHash
+          if (previous && !hash) {
+            const found = await findTransfers(
+              chain,
+              receiver.account.cosmos,
+              record.transferId,
+              sender.account.cosmos
+            )
+            hash = found[0]?.hash
+            if (!hash && !previous.failedDeposit)
+              throw new Error(
+                "Deposit not yet confirmed. Check again before taking further action."
+              )
+          }
+          if (!hash) {
+            update({ failedDeposit: false })
+            try {
+              hash = await flows.sendTransfer(
+                sender,
+                receiver.account.cosmos,
+                record.transferId,
+                d.deposit
+              )
+            } catch (e) {
+              update({ failedDeposit: e instanceof TxFailed && e.code > 0 })
+              throw e
+            }
+          }
+          update({ depositHash: hash })
+          const landed = observeTransfer(
+            await chain.waitForTx(hash),
+            receiver.account.cosmos
+          )
+          if (
+            !landed.ok ||
+            landed.terms.transferId !== record.transferId ||
+            landed.terms.originator !== sender.account.cosmos
+          )
+            throw new Error(
+              "Could not match this deposit to the reviewed transfer."
+            )
+          update({ observed: landed.terms })
+          const { outcome, answerTx } = await flows.receiveAndAnswer(
+            receiver,
+            hash
+          )
+          const decision =
+            outcome.decision === "alreadyAnswered"
+              ? outcome.answer
+              : outcome.decision
+          if (decision !== "accepted" && decision !== "rejected")
+            throw new Error(
+              "The exchange has not recorded a decision for this deposit."
+            )
+          update({ decision, answerHash: answerTx })
+        }
+      )
+    } catch (e) {
+      setError(errorLine(e))
+    }
   }
 
+  const observed = progress?.observed
   return (
-    <div className="flex flex-col gap-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Send fUSD with its travel-rule record</CardTitle>
-          <CardDescription>
-            As the Mumbai exchange, paying a customer of the Singapore exchange. The record is sealed in this browser to Singapore's registered ML-KEM-1024 key and the quarter's auditor, bound to this exact transfer.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <FieldGroup>
-            <Field data-invalid={!sendable || undefined}>
-              <FieldLabel htmlFor="amount">Amount in the record (fUSD)</FieldLabel>
-              <Input id="amount" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} aria-invalid={!sendable || undefined} className="font-mono" />
-              <FieldDescription>{sendable ? "Fictional customers: Meera Kulkarni (Mumbai) pays Wei Ling Tan (Singapore)." : "Enter a positive amount with up to 6 decimals, large enough that something lands."}</FieldDescription>
+    <Card>
+      <CardHeader>
+        <CardTitle>
+          {progress
+            ? "Track transfer"
+            : draft
+              ? "Review transfer"
+              : "Send fUSD"}
+        </CardTitle>
+        <CardDescription>
+          {live
+            ? "QoreChain testnet · The local demo acts as both exchanges."
+            : "Browser simulation · Temporary keys, fictional identities and no movement of funds."}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-5">
+        {!draft ? (
+          <>
+            <Field>
+              <FieldLabel htmlFor="amount">
+                Amount in the record (fUSD)
+              </FieldLabel>
+              <Input
+                id="amount"
+                inputMode="decimal"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                disabled={!!busy}
+              />
             </Field>
-            <FieldSet>
-              <FieldLegend variant="label">Auditor</FieldLegend>
-              <ToggleGroup aria-label="Auditor quarter" value={[quarter]} onValueChange={(v) => v[0] && setQuarter(v[0] as Quarter)} variant="outline">
-                <ToggleGroupItem value="q4">Q4 2026 (current)</ToggleGroupItem>
-                <ToggleGroupItem value="q3">Q3 2026</ToggleGroupItem>
-              </ToggleGroup>
-              <FieldDescription>Each quarter has its own auditor key, so an auditor only ever opens its own quarter.</FieldDescription>
-            </FieldSet>
-            <FieldSet>
-              <FieldLegend variant="label">What actually lands on chain</FieldLegend>
-              <ToggleGroup aria-label="What actually lands on chain" value={[landing]} onValueChange={(v) => v[0] && setLanding(v[0] as Landing)} variant="outline">
-                <ToggleGroupItem value="same">The amount in the record</ToggleGroupItem>
-                <ToggleGroupItem value="less">20% less (tampered)</ToggleGroupItem>
-              </ToggleGroup>
-              <FieldDescription>A tampered transfer doesn't match the record, so the receiver can't open it and rejects it on chain.</FieldDescription>
-            </FieldSet>
-          </FieldGroup>
-        </CardContent>
-        <CardFooter className="justify-between gap-4">
-          <span className="font-mono text-sm text-muted-foreground">{sendable ? `${fusd(sent!)} fUSD will land` : "Nothing to send yet"}</span>
-          <Button onClick={submit} disabled={!sendable || !!busy}>
-            {busy === FLOW ? <Spinner data-icon="inline-start" /> : <SendIcon data-icon="inline-start" />}
-            Seal, post and send
-          </Button>
-        </CardFooter>
-      </Card>
-      <FlowError title="The send didn't finish" error={error} />
-      {unsent && !busy && (
-        <Alert>
-          <AlertTitle>The record is posted, but the transfer hasn't been sent</AlertTitle>
-          <AlertDescription>Record <span className="font-mono">{unsent.posted.transferId.slice(0, 12)}…</span> is on the ledger. Retry sends only the {fusd(unsent.sent)} fUSD, without posting again.</AlertDescription>
-          <AlertAction>
-            <Button size="sm" variant="outline" onClick={retry}>
-              <RotateCwIcon data-icon="inline-start" />
-              Retry transfer
+            <label>
+              Auditor quarter{" "}
+              <select
+                className="rounded border bg-card p-2"
+                value={quarter}
+                disabled={!!busy}
+                onChange={(e) => setQuarter(e.target.value as typeof quarter)}
+              >
+                <option value="q4">Q4 2026</option>
+                <option value="q3">Q3 2026</option>
+              </select>
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={smaller}
+                disabled={!!busy}
+                onChange={(e) => setSmaller(e.target.checked)}
+              />{" "}
+              Test a deposit that is 20% smaller
+            </label>
+            {(!units || deposit === "0") && (
+              <p>
+                Enter a positive amount with up to six decimal places that
+                yields a nonzero deposit.
+              </p>
+            )}
+            <Button
+              disabled={!!busy || !units || deposit === "0"}
+              onClick={review}
+            >
+              Review transfer
             </Button>
-          </AlertAction>
-        </Alert>
-      )}
-      {result && (
-        <Alert>
-          <AlertTitle className="flex flex-wrap items-center gap-2">
-            Sent <Badge variant="success">record posted</Badge> <Badge variant="secondary" className="font-mono">{fusd(result.sent)} fUSD landed</Badge>
-          </AlertTitle>
-          <AlertDescription>
-            Transfer <span className="font-mono">{result.posted.transferId.slice(0, 12)}…</span>, {result.posted.envelope.length} byte envelope. Open the Inbox tab to receive it as Singapore.
-          </AlertDescription>
-        </Alert>
-      )}
-    </div>
+          </>
+        ) : (
+          <>
+            <p>
+              <strong>{fusd(draft.record.transfer.amount)} fUSD</strong> ·
+              Mumbai to Singapore · Wei Ling Tan
+            </p>
+            {!progress && (
+              <p>
+                Deposit to {live ? "send" : "simulate"}: {fusd(draft.deposit)}{" "}
+                fUSD. Singapore will check the record against the deposit.
+              </p>
+            )}
+            {progress && (
+              <ol
+                aria-label="Transfer timeline"
+                aria-live="polite"
+                className="grid gap-2 rounded-xl border p-4"
+              >
+                <li>
+                  1. Record{" "}
+                  {progress.envelope ? "sealed" : "awaiting confirmation"}{" "}
+                  {progress.postHash && (
+                    <a
+                      className="underline"
+                      href={`${EXPLORER}/tx/${progress.postHash}`}
+                    >
+                      View post
+                    </a>
+                  )}
+                </li>
+                <li>
+                  2. Deposit{" "}
+                  {observed
+                    ? `observed · ${fusd(observed.amount)} fUSD`
+                    : "awaiting confirmation"}{" "}
+                  {progress.depositHash && (
+                    <a
+                      className="underline"
+                      href={`${EXPLORER}/tx/${progress.depositHash}`}
+                    >
+                      View deposit
+                    </a>
+                  )}
+                </li>
+                <li>
+                  3. Exchange {progress.decision ?? "decision pending"}{" "}
+                  {progress.answerHash && (
+                    <a
+                      className="underline"
+                      href={`${EXPLORER}/tx/${progress.answerHash}`}
+                    >
+                      View signed decision
+                    </a>
+                  )}
+                </li>
+              </ol>
+            )}
+            {progress?.decision === "rejected" && observed && (
+              <div role="status">
+                The record specifies {fusd(draft.record.transfer.amount)} fUSD.
+                The deposit was {fusd(observed.amount)} fUSD.{" "}
+                {observed.amount !== draft.record.transfer.amount
+                  ? "The amounts differ, so Singapore could not open the record."
+                  : "Singapore rejected the record."}{" "}
+                {live && "The deposit remains on chain."}
+              </div>
+            )}
+            <PrivacyPreview
+              record={draft.record}
+              parties={draft.parties}
+              quarter={draft.quarter}
+              terms={observed ?? termsOf(draft.record)}
+              envelope={observed ? progress?.envelope : undefined}
+            />
+            <div className="flex flex-wrap gap-2">
+              {!progress && (
+                <>
+                  <Button variant="outline" disabled={!!busy} onClick={reset}>
+                    Edit transfer
+                  </Button>
+                  <Button disabled={!!busy} onClick={() => track(draft)}>
+                    {live ? "Confirm testnet transfer" : "Confirm simulation"}
+                  </Button>
+                </>
+              )}
+              {progress?.decision === "rejected" && !live && (
+                <Button
+                  disabled={!!busy}
+                  onClick={() => {
+                    const next = {
+                      ...draft,
+                      record: {
+                        ...draft.record,
+                        transferId: newTransferId(),
+                        sentAt: new Date().toISOString(),
+                      },
+                      deposit: draft.record.transfer.amount,
+                    }
+                    setDraft(next)
+                    setSmaller(false)
+                    void track(next)
+                  }}
+                >
+                  Retry with matching amounts
+                </Button>
+              )}
+              {live && progress && (
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(
+                        draft.record.transferId
+                      )
+                      setCopyStatus("Reference copied")
+                    } catch {
+                      setCopyStatus(draft.record.transferId)
+                    }
+                  }}
+                >
+                  Copy reference
+                </Button>
+              )}
+              {copyStatus && (
+                <span className="break-all" role="status">
+                  {copyStatus}
+                </span>
+              )}
+              {error && progress?.postHash && !progress.decision && (
+                <Button
+                  disabled={!!busy}
+                  onClick={() => track(draft, progress)}
+                >
+                  {progress.failedDeposit
+                    ? "Retry failed deposit"
+                    : "Recheck transfer"}
+                </Button>
+              )}
+              {progress &&
+                !busy &&
+                (progress.decision || !progress.postHash) && (
+                  <Button variant="outline" onClick={reset}>
+                    New transfer
+                  </Button>
+                )}
+            </div>
+          </>
+        )}
+        <FlowError title="Transfer needs attention" error={error} />
+      </CardContent>
+    </Card>
   )
 }
